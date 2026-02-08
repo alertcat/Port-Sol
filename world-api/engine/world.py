@@ -256,21 +256,51 @@ class WorldEngine:
                 {}, success, message, self.state.state_hash
             )
     
+    def _get_pyth_sol_modifier(self) -> float:
+        """
+        Fetch SOL/USD price from Pyth Network oracle and compute a market modifier.
+        
+        When SOL price rises above $150, all in-game prices get a boost (up to +15%).
+        When SOL price drops below $150, all in-game prices get dampened (down to -15%).
+        This ties the in-game economy to real-world Solana market conditions.
+        
+        Returns a multiplier in range [0.85, 1.15]. Returns 1.0 on error.
+        """
+        try:
+            from engine.blockchain import get_pyth_feed
+            pyth = get_pyth_feed()
+            sol_price = pyth.get_sol_usd_price()
+            if sol_price and sol_price > 0:
+                # Reference price: $150 SOL/USD (adjustable baseline)
+                reference_price = 150.0
+                # Ratio: e.g. SOL=$180 → ratio=1.2, SOL=$120 → ratio=0.8
+                ratio = sol_price / reference_price
+                # Clamp modifier to ±15%: range [0.85, 1.15]
+                modifier = max(0.85, min(1.15, ratio))
+                return modifier
+        except Exception as e:
+            print(f"Pyth oracle modifier error (non-fatal): {e}")
+        return 1.0  # Neutral if Pyth unavailable
+
     def _update_market_prices(self, effects: dict):
         """
-        Update market prices based on supply/demand dynamics.
+        Update market prices based on supply/demand dynamics + Pyth oracle.
         
         Mechanics:
         - Track total resources sold/bought per tick
         - High supply (lots of selling) → price drops
         - Low supply (lots of buying) → price rises
-        - Random fluctuation ±5%
+        - Random fluctuation ±8%
         - Event modifiers (trade_boom = +20%)
+        - Pyth SOL/USD oracle: real-world SOL price influences in-game prices (±15%)
         - Prices clamped to min 3, max 50
         """
         import random as rng
         
         base_prices = {"iron": 15, "wood": 12, "fish": 8}
+        
+        # Pyth oracle: real-world SOL/USD price influences in-game market
+        pyth_modifier = self._get_pyth_sol_modifier()
         
         # Count total inventory of each resource across all agents (supply indicator)
         total_supply = {}
@@ -296,8 +326,8 @@ class WorldEngine:
             # Event modifier
             event_mod = effects.get("price_modifier", 1.0)
             
-            # Calculate new price
-            new_price = current * supply_factor * noise * reversion * event_mod
+            # Calculate new price (now includes Pyth oracle modifier)
+            new_price = current * supply_factor * noise * reversion * event_mod * pyth_modifier
             
             # Clamp
             new_price = max(3, min(50, int(round(new_price))))
@@ -333,7 +363,7 @@ class WorldEngine:
         # 4. Get event effects
         effects = EventSystem.get_active_effects(self.state.active_events)
         
-        # 5. Update market prices based on supply/demand
+        # 5. Update market prices based on supply/demand + Pyth oracle
         self._update_market_prices(effects)
         
         # 6. Natural AP recovery (affected by events)
