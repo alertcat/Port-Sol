@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: ./world-api
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  miner-bot:
+    build:
+      context: ./agents
+      dockerfile: Dockerfile
+    environment:
+      - API_URL=http://api:8000
+      - MINER_WALLET=0xMiner001
+    command: python miner_bot.py
+    depends_on:
+      api:
+        condition: service_healthy
+
+  trader-bot:
+    build:
+      context: ./agents
+      dockerfile: Dockerfile
+    environment:
+      - API_URL=http://api:8000
+      - TRADER_WALLET=0xTrader001
+    command: python trader_bot.py
+    depends_on:
+      api:
+        condition: service_healthy
+
+  governor-bot:
+    build:
+      context: ./agents
+      dockerfile: Dockerfile
+    environment:
+      - API_URL=http://api:8000
+      - GOVERNOR_WALLET=0xGovernor001
+    command: python governor_bot.py
+    depends_on:
+      api:
+        condition: service_healthy

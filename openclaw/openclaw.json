@@ -1,0 +1,67 @@
+{
+  "$schema": "https://openclaw.ai/schema/config.json",
+  "gateway": {
+    "port": 18789,
+    "host": "0.0.0.0",
+    "auth": {
+      "token": "${OPENCLAW_GATEWAY_TOKEN}"
+    }
+  },
+  "agents": {
+    "defaults": {
+      "workspace": "~/.openclaw/workspace",
+      "sandbox": {
+        "mode": "off"
+      }
+    },
+    "port-sol-host": {
+      "name": "Port Sol World Host",
+      "description": "Manages the Port Sol persistent world, advances ticks, and publishes world news",
+      "skills": [
+        "./skills/port-sol-host"
+      ],
+      "tools": {
+        "http": true,
+        "web": true
+      }
+    },
+    "port-sol-miner": {
+      "name": "Miner Bot",
+      "description": "Mining agent that harvests resources in Port Sol",
+      "skills": [
+        "./skills/port-sol-client"
+      ]
+    },
+    "port-sol-trader": {
+      "name": "Trader Bot",
+      "description": "Trading agent that buys low and sells high in Port Sol",
+      "skills": [
+        "./skills/port-sol-client"
+      ]
+    },
+    "port-sol-governor": {
+      "name": "Governor Bot",
+      "description": "Governance agent that participates in Port Sol politics",
+      "skills": [
+        "./skills/port-sol-client"
+      ]
+    }
+  },
+  "routing": {
+    "defaults": {
+      "model": "anthropic/claude-sonnet-4-20250514"
+    }
+  },
+  "tools": {
+    "http": {
+      "enabled": true,
+      "allowedHosts": [
+        "localhost",
+        "127.0.0.1",
+        "43.156.62.248",
+        "moltbook.com",
+        "api.devnet.solana.com"
+      ]
+    }
+  }
+}

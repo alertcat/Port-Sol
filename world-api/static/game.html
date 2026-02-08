@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Port Sol - World View</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #09090b;
+            min-height: 100vh;
+            color: #fafafa;
+            overflow: hidden;
+        }
+
+        /* === LAYOUT === */
+        .app {
+            display: grid;
+            grid-template-columns: 260px 1fr 340px;
+            grid-template-rows: 64px 1fr;
+            height: 100vh;
+            gap: 0;
+        }
+
+        /* === TOP BAR === */
+        .topbar {
+            grid-column: 1 / -1;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            border-bottom: 1px solid #27272a;
+            background: #09090b;
+            z-index: 10;
+        }
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .topbar-logo {
+            font-size: 18px;
+            font-weight: 700;
+            color: #fafafa;
+            letter-spacing: -0.5px;
+        }
+        .topbar-logo span { color: #a78bfa; }
+        .topbar-breadcrumb {
+            color: #71717a;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .topbar-breadcrumb .sep { color: #3f3f46; }
+        .topbar-breadcrumb .current { color: #a1a1aa; }
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .topbar-stat {
+            text-align: center;
+        }
+        .topbar-stat-label {
+            font-size: 11px;
+            color: #71717a;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 500;
+        }
+        .topbar-stat-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #fafafa;
+        }
+        .conn-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 9999px;
+            background: rgba(34,197,94,0.1);
+            border: 1px solid rgba(34,197,94,0.2);
+            font-size: 12px;
+            color: #22c55e;
+            font-weight: 500;
+        }
+        .conn-badge.disconnected {
+            background: rgba(239,68,68,0.1);
+            border-color: rgba(239,68,68,0.2);
+            color: #ef4444;
+        }
+        .conn-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: #22c55e;
+        }
+        .conn-badge.disconnected .conn-dot { background: #ef4444; }
+
+        /* === LEFT SIDEBAR === */
+        .sidebar {
+            grid-column: 1;
+            grid-row: 2;
+            border-right: 1px solid #27272a;
+            background: #09090b;
+            overflow-y: auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .sidebar-section-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #52525b;
+            font-weight: 600;
+            padding: 12px 0 6px 8px;
+        }
+
+        /* Agent cards */
+        .agent-card {
+            display: flex;
+            align-items: center;
+            padding: 10px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.15s;
+            gap: 10px;
+            border: 1px solid transparent;
+        }
+        .agent-card:hover { background: #18181b; }
+        .agent-card.selected {
+            background: #18181b;
+            border-color: #3f3f46;
+        }
+        .agent-avatar {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            border: 2px solid #3f3f46;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+            color: #fff;
+        }
+        .agent-card-info { flex: 1; min-width: 0; }
+        .agent-card-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #fafafa;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .agent-card-sub {
+            font-size: 12px;
+            color: #71717a;
+            margin-top: 1px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .agent-card-credits {
+            font-weight: 700;
+            color: #22c55e;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+
+        /* Region pill */
+        .region-pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 8px;
+            border-radius: 9999px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .region-dock   { background: rgba(59,130,246,0.15); color: #60a5fa; }
+        .region-mine   { background: rgba(245,158,11,0.15); color: #fbbf24; }
+        .region-forest { background: rgba(34,197,94,0.15);  color: #4ade80; }
+        .region-market { background: rgba(168,85,247,0.15); color: #c084fc; }
+
+        /* === GAME CANVAS CENTER === */
+        .game-center {
+            grid-column: 2;
+            grid-row: 2;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background: #0a0a0a;
+        }
+        #game-container {
+            flex: 1;
+            min-height: 0;
+        }
+        #game-container canvas {
+            display: block;
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        /* === RIGHT PANEL === */
+        .right-panel {
+            grid-column: 3;
+            grid-row: 2;
+            border-left: 1px solid #27272a;
+            background: #09090b;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .r-card {
+            padding: 20px;
+            border-bottom: 1px solid #27272a;
+        }
+        .r-card-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #fafafa;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .r-card-title .icon { font-size: 18px; }
+
+        /* Market prices */
+        .price-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #1a1a1e;
+        }
+        .price-item:last-child { border-bottom: none; }
+        .price-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .price-icon {
+            width: 36px; height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+        .price-icon.iron   { background: rgba(148,163,184,0.15); }
+        .price-icon.wood   { background: rgba(245,158,11,0.15); }
+        .price-icon.fish   { background: rgba(59,130,246,0.15); }
+        .price-label { font-size: 14px; font-weight: 500; color: #d4d4d8; }
+        .price-val {
+            font-size: 18px;
+            font-weight: 700;
+            color: #fafafa;
+        }
+        .price-val.up   { color: #22c55e; }
+        .price-val.down { color: #ef4444; }
+
+        /* Events */
+        .event-item {
+            padding: 10px 14px;
+            background: #18181b;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            border-left: 3px solid #f59e0b;
+        }
+        .event-type {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #fbbf24;
+            letter-spacing: 0.5px;
+        }
+        .event-desc {
+            font-size: 13px;
+            color: #a1a1aa;
+            margin-top: 3px;
+        }
+        .event-timer {
+            font-size: 11px;
+            color: #52525b;
+            margin-top: 4px;
+        }
+        .empty-state {
+            text-align: center;
+            color: #52525b;
+            padding: 16px;
+            font-size: 13px;
+        }
+
+        /* Action Log */
+        .action-log-wrap {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0 20px 20px;
+        }
+        .log-entry {
+            font-size: 13px;
+            padding: 8px 12px;
+            margin-bottom: 4px;
+            border-radius: 6px;
+            background: #18181b;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .log-entry.fail { border-left: 3px solid #ef4444; }
+        .log-entry.success { border-left: 3px solid #22c55e; }
+        .log-time { color: #52525b; font-size: 11px; font-weight: 500; white-space: nowrap; }
+        .log-icon { font-size: 16px; }
+        .log-agent { color: #a78bfa; font-weight: 600; }
+        .log-tag {
+            display: inline-block;
+            padding: 1px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .log-tag.harvest   { background: rgba(34,197,94,0.15); color: #4ade80; }
+        .log-tag.move      { background: rgba(59,130,246,0.15); color: #60a5fa; }
+        .log-tag.place_order { background: rgba(168,85,247,0.15); color: #c084fc; }
+        .log-tag.rest      { background: rgba(113,113,122,0.15); color: #a1a1aa; }
+        .log-tag.raid      { background: rgba(239,68,68,0.15); color: #f87171; }
+        .log-tag.negotiate { background: rgba(245,158,11,0.15); color: #fbbf24; }
+        .log-tag.register  { background: rgba(34,197,94,0.15); color: #4ade80; }
+        .log-msg { color: #71717a; font-size: 12px; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <!-- TOP BAR -->
+        <header class="topbar">
+            <div class="topbar-left">
+                <div class="topbar-logo"><span>Port</span>Solana Devnet</div>
+                <div class="topbar-breadcrumb">
+                    <span class="sep">/</span>
+                    <span class="current">World View</span>
+                </div>
+            </div>
+            <div class="topbar-right">
+                <div class="topbar-stat">
+                    <div class="topbar-stat-label">Tick</div>
+                    <div class="topbar-stat-value" id="h-tick">-</div>
+                </div>
+                <div class="topbar-stat">
+                    <div class="topbar-stat-label">Agents</div>
+                    <div class="topbar-stat-value" id="h-agents">-</div>
+                </div>
+                <div class="topbar-stat">
+                    <div class="topbar-stat-label">Tax</div>
+                    <div class="topbar-stat-value" id="h-tax">-</div>
+                </div>
+                <div class="conn-badge" id="conn-badge">
+                    <div class="conn-dot"></div>
+                    <span id="conn-text">Connected</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- LEFT SIDEBAR: Agents -->
+        <aside class="sidebar">
+            <div class="sidebar-section-title">Leaderboard</div>
+            <div id="agent-list"><div class="empty-state">Waiting for agents...</div></div>
+            <div style="flex:1;"></div>
+            <div style="padding:8px;border-top:1px solid #27272a;margin-top:8px;">
+                <a href="/dashboard" style="color:#71717a;font-size:12px;text-decoration:none;">Dashboard</a>
+                <span style="color:#3f3f46;margin:0 6px;">|</span>
+                <a href="/docs" style="color:#71717a;font-size:12px;text-decoration:none;">API Docs</a>
+            </div>
+        </aside>
+
+        <!-- CENTER: Game Canvas -->
+        <main class="game-center">
+            <div id="game-container"></div>
+        </main>
+
+        <!-- RIGHT PANEL -->
+        <aside class="right-panel">
+            <div class="r-card">
+                <div class="r-card-title"><span class="icon">&#x1F4C8;</span> Market Prices</div>
+                <div id="market-prices">
+                    <div class="price-item">
+                        <div class="price-left"><div class="price-icon iron">&#x26CF;&#xFE0F;</div><span class="price-label">Iron</span></div>
+                        <div class="price-val" id="p-iron">-</div>
+                    </div>
+                    <div class="price-item">
+                        <div class="price-left"><div class="price-icon wood">&#x1FAB5;</div><span class="price-label">Wood</span></div>
+                        <div class="price-val" id="p-wood">-</div>
+                    </div>
+                    <div class="price-item">
+                        <div class="price-left"><div class="price-icon fish">&#x1F41F;</div><span class="price-label">Fish</span></div>
+                        <div class="price-val" id="p-fish">-</div>
+                    </div>
+                </div>
+            </div>
+            <div class="r-card">
+                <div class="r-card-title"><span class="icon">&#x26A1;</span> Events</div>
+                <div id="events-list"><div class="empty-state">No active events</div></div>
+            </div>
+            <div class="r-card" style="border-bottom:none;flex-shrink:0;">
+                <div class="r-card-title"><span class="icon">&#x1F4DC;</span> Activity Log</div>
+            </div>
+            <div class="action-log-wrap" id="action-log">
+                <div class="empty-state">Waiting for actions...</div>
+            </div>
+        </aside>
+    </div>
+
+    <script>
+    // ============================================================
+    // CONSTANTS — BIGGER tiles, BIGGER map
+    // ============================================================
+    const API_URL = window.location.origin;
+    const TILE = 48;          // 48px tiles (1.5x bigger than before)
+    const MAP_W = 28;         // tiles across
+    const MAP_H = 22;         // tiles tall
+    const WORLD_PX_W = MAP_W * TILE;
+    const WORLD_PX_H = MAP_H * TILE;
+
+    // Regions now occupy clear halves
+    const REGIONS = {
+        dock:   { x1:0,  y1:0,  x2:12, y2:9,  cx:6,  cy:5,  color:0x3b82f6, label:'DOCK',   emoji:'\u2693' },
+        mine:   { x1:15, y1:0,  x2:27, y2:9,  cx:21, cy:5,  color:0xf59e0b, label:'MINE',   emoji:'\u26cf\ufe0f' },
+        market: { x1:0,  y1:12, x2:12, y2:21, cx:6,  cy:16, color:0xa855f7, label:'MARKET', emoji:'\ud83d\udcb0' },
+        forest: { x1:15, y1:12, x2:27, y2:21, cx:21, cy:16, color:0x22c55e, label:'FOREST', emoji:'\ud83c\udf32' }
+    };
+    const CROSSROADS = { x: 14 * TILE, y: 11 * TILE };
+
+    // ============================================================
+    // STATE
+    // ============================================================
+    let gameScene = null;
+    let agentSprites = {};
+    let previousAgents = {};
+    let previousPrices = {};
+    let processedActions = new Set();
+    let selectedAgent = null;
+
+    function seededRandom(x, y) {
+        let n = Math.sin(x * 127.1 + y * 311.7) * 43758.5453;
+        return n - Math.floor(n);
+    }
+
+    // Bright, saturated pastel palette for agents
+    const AGENT_COLORS = [
+        0xf87171, 0xfb923c, 0xfbbf24, 0xa3e635,
+        0x4ade80, 0x2dd4bf, 0x38bdf8, 0x818cf8,
+        0xc084fc, 0xf472b6, 0xe879f9, 0x22d3ee
+    ];
+    let colorIdx = 0;
+    const walletColorMap = {};
+    function walletToColor(wallet) {
+        if (!walletColorMap[wallet]) {
+            walletColorMap[wallet] = AGENT_COLORS[colorIdx % AGENT_COLORS.length];
+            colorIdx++;
+        }
+        return walletColorMap[wallet];
+    }
+
+    // ============================================================
+    // PHASER SCENE
+    // ============================================================
+    class WorldScene extends Phaser.Scene {
+        constructor() { super('WorldScene'); }
+
+        create() {
+            gameScene = this;
+            this.waterTiles = [];
+            this.generateMap();
+            this.setupCamera();
+            startPolling();
+        }
+
+        update(time) {
+            this.animateWater(time);
+        }
+
+        // -------- MAP GENERATION --------
+        generateMap() {
+            const T = TILE;
+            const half = T / 2;
+
+            // === BASE GRASS ===
+            for (let y = 0; y < MAP_H; y++) {
+                for (let x = 0; x < MAP_W; x++) {
+                    const v = seededRandom(x, y);
+                    const g = v < 0.3 ? 0x22c55e : v < 0.55 ? 0x16a34a : v < 0.8 ? 0x15803d : 0x166534;
+                    this.add.rectangle(x*T+half, y*T+half, T, T, g);
+                }
+            }
+
+            // === DOCK (top-left) ===
+            for (let y = 0; y <= 9; y++) {
+                for (let x = 0; x <= 12; x++) {
+                    if (y < 3) {
+                        const wv = seededRandom(x,y);
+                        const wc = wv < 0.3 ? 0x2563eb : wv < 0.6 ? 0x3b82f6 : wv < 0.85 ? 0x1d4ed8 : 0x1e40af;
+                        const tile = this.add.rectangle(x*T+half, y*T+half, T, T, wc);
+                        this.waterTiles.push({tile, baseColor:wc, x, y});
+                        // Wave lines
+                        if (seededRandom(x+50,y+50) > 0.6) {
+                            this.add.rectangle(x*T+half, y*T+half-4, T*0.6, 2, 0x93c5fd).setAlpha(0.25);
+                        }
+                    } else if (y < 4) {
+                        // Shore sand with pebbles
+                        const sc = seededRandom(x,y) < 0.35 ? 0xfbbf24 : seededRandom(x,y) < 0.65 ? 0xf59e0b : 0xfcd34d;
+                        this.add.rectangle(x*T+half, y*T+half, T, T, sc);
+                        // Pebbles
+                        if (seededRandom(x+10,y+10) > 0.7) {
+                            this.add.circle(x*T+half+8, y*T+half+6, 3, 0xd6d3d1).setAlpha(0.4);
+                        }
+                    } else if (y >= 4 && y <= 5 && x >= 2 && x <= 10) {
+                        // Wooden pier with better planks
+                        const pc = seededRandom(x,y) < 0.4 ? 0x92400e : seededRandom(x,y) < 0.7 ? 0x78350f : 0xa16207;
+                        this.add.rectangle(x*T+half, y*T+half, T, T, pc);
+                        // Plank gaps
+                        this.add.rectangle(x*T+half, y*T+half, 2, T, 0x451a03).setAlpha(0.5);
+                        // Nail dots
+                        this.add.circle(x*T+half-8, y*T+half-8, 1.5, 0x44403c).setAlpha(0.6);
+                        this.add.circle(x*T+half+8, y*T+half+8, 1.5, 0x44403c).setAlpha(0.6);
+                    }
+                }
+            }
+            // Pier posts (where pier meets water)
+            for (let x = 2; x <= 10; x += 2) {
+                this.add.rectangle(x*T+half, 3*T+half+8, 8, 16, 0x78350f);
+            }
+
+            // Dock buildings — bigger with more detail
+            this.drawBuilding(1, 6, 5, 3, 0x64748b, 0x475569, 0x94a3b8);
+            this.drawBuilding(8, 6, 4, 3, 0x64748b, 0x475569, 0x94a3b8);
+            // Crates scattered
+            this.drawCrate(7, 5); this.drawCrate(7, 4);
+            this.drawCrate(11, 4); this.drawCrate(12, 5);
+            // Rope coil
+            this.add.circle(6*T+half, 4*T+half, 8, 0xa16207);
+            this.add.circle(6*T+half, 4*T+half, 4, 0x78350f);
+            // Lantern on pier
+            this.add.rectangle(5*T+half, 4*T+half-12, 4, 16, 0x44403c).setDepth(1);
+            this.add.circle(5*T+half, 4*T+half-18, 5, 0xfbbf24).setAlpha(0.7).setDepth(1);
+
+            // === MINE (top-right) ===
+            for (let y = 0; y <= 9; y++) {
+                for (let x = 15; x <= 27; x++) {
+                    const mv = seededRandom(x,y);
+                    const mc = mv < 0.3 ? 0x78716c : mv < 0.55 ? 0x57534e : mv < 0.8 ? 0x44403c : 0x696460;
+                    this.add.rectangle(x*T+half, y*T+half, T, T, mc);
+                }
+            }
+            // Cave entrance (big dark hole)
+            this.add.rectangle(21*T+half, 2*T+half, T*4, T*3, 0x44403c);
+            this.add.rectangle(21*T+half, 2*T+half, T*2.5, T*1.8, 0x1c1917);
+            // Cave arch
+            const caveGfx = this.add.graphics();
+            caveGfx.fillStyle(0x57534e, 1);
+            caveGfx.fillRoundedRect(21*T+half - T*2.2, 2*T+half - T*1.6, T*4.4, T*1, 12);
+
+            // Ore veins (shiny rocks)
+            const ores = [[16,1],[18,3],[17,6],[20,5],[23,1],[25,3],[27,2],[24,7],[26,6],[19,8]];
+            for (const [ox,oy] of ores) {
+                const shine = seededRandom(ox,oy) < 0.5 ? 0xd6d3d1 : 0xa8a29e;
+                this.add.circle(ox*T+half, oy*T+half, 8, shine);
+                // Sparkle
+                this.add.circle(ox*T+half-3, oy*T+half-3, 2, 0xfafaf9).setAlpha(0.5);
+            }
+            // Cart tracks
+            for (let x = 17; x < 26; x++) {
+                this.add.rectangle(x*T+half, 4*T+half, T, 4, 0x3f3f46);
+                this.add.rectangle(x*T+half, 4*T+half+6, T, 4, 0x3f3f46);
+            }
+            // Mine cart
+            this.add.rectangle(24*T+half, 4*T+half+2, 20, 16, 0x78716c);
+            this.add.rectangle(24*T+half-6, 4*T+half+12, 6, 6, 0x44403c);
+            this.add.rectangle(24*T+half+6, 4*T+half+12, 6, 6, 0x44403c);
+
+            // === MARKET (bottom-left) ===
+            for (let y = 12; y <= 21; y++) {
+                for (let x = 0; x <= 12; x++) {
+                    const cv = seededRandom(x,y);
+                    const cc = cv < 0.25 ? 0xd6d3d1 : cv < 0.5 ? 0xa8a29e : cv < 0.75 ? 0xe7e5e4 : 0xc4b5a3;
+                    this.add.rectangle(x*T+half, y*T+half, T, T, cc);
+                    // Cobblestone gap
+                    if ((x+y) % 2 === 0) {
+                        this.add.rectangle(x*T+half, y*T+half, T-2, T-2, 0xd6d3d1).setAlpha(0.2);
+                    }
+                }
+            }
+            // Market stalls with awnings
+            const stallData = [
+                {x:2, y:14, color:0xef4444, name:'Weapons'},
+                {x:5, y:14, color:0x3b82f6, name:'Potions'},
+                {x:8, y:14, color:0x22c55e, name:'Food'},
+                {x:11,y:14, color:0xf59e0b, name:'Tools'}
+            ];
+            for (const s of stallData) {
+                // Counter
+                this.add.rectangle(s.x*T+half, s.y*T+half+8, T*1.6, T*0.8, 0x78350f);
+                // Awning
+                this.add.rectangle(s.x*T+half, (s.y-1)*T+half+12, T*1.8, T*0.5, s.color).setAlpha(0.85);
+                // Awning stripe
+                this.add.rectangle(s.x*T+half, (s.y-1)*T+half+16, T*1.8, 3, 0x000000).setAlpha(0.15);
+            }
+            // Fountain
+            this.add.circle(6*T+half, 18*T+half, 28, 0x71717a);
+            this.add.circle(6*T+half, 18*T+half, 22, 0x60a5fa).setAlpha(0.6);
+            this.add.circle(6*T+half, 18*T+half, 10, 0x93c5fd).setAlpha(0.7);
+            // Fountain water animation target
+            this.fountainCenter = {x: 6*T+half, y: 18*T+half};
+
+            // === FOREST (bottom-right) ===
+            for (let y = 12; y <= 21; y++) {
+                for (let x = 15; x <= 27; x++) {
+                    const fv = seededRandom(x,y);
+                    const fc = fv < 0.35 ? 0x14532d : fv < 0.65 ? 0x166534 : 0x15803d;
+                    this.add.rectangle(x*T+half, y*T+half, T, T, fc);
+                }
+            }
+            // Trees - multi-layer canopy for Tiled-style look
+            const trees = [
+                [16,13],[18,13],[20,12],[22,13],[25,12],[27,13],
+                [15,15],[17,15],[19,14],[24,15],[26,14],[27,15],
+                [16,17],[18,16],[23,17],[25,16],[27,17],
+                [15,19],[17,18],[20,19],[22,18],[26,19],
+                [16,21],[19,20],[23,21],[25,20],[27,21]
+            ];
+            for (const [tx,ty] of trees) {
+                const tv = seededRandom(tx,ty);
+                const isBig = tv > 0.5;
+                const sz = isBig ? 1.3 : 1.0;
+                // Root bumps
+                this.add.ellipse(tx*T+half, ty*T+half+16, 16*sz, 6, 0x57534e).setAlpha(0.3);
+                // Trunk
+                this.add.rectangle(tx*T+half, ty*T+half+8, 8*sz, 22*sz, 0x78350f);
+                // Trunk bark texture
+                this.add.rectangle(tx*T+half-2, ty*T+half+4, 2, 8, 0x451a03).setAlpha(0.4);
+                // Canopy shadow on ground
+                this.add.ellipse(tx*T+half+4, ty*T+half+18, 28*sz, 8, 0x000000).setAlpha(0.15);
+                // Main canopy
+                const tc = tv < 0.3 ? 0x16a34a : tv < 0.6 ? 0x15803d : 0x22c55e;
+                this.add.circle(tx*T+half, ty*T+half-8*sz, 20*sz, tc).setAlpha(0.95);
+                // Canopy highlight (sunlit side)
+                this.add.circle(tx*T+half-6*sz, ty*T+half-12*sz, 10*sz, 0x4ade80).setAlpha(0.4);
+                // Canopy shadow (dark side)
+                this.add.circle(tx*T+half+5*sz, ty*T+half-4*sz, 12*sz, 0x166534).setAlpha(0.5);
+                // Top tuft
+                this.add.circle(tx*T+half-2, ty*T+half-18*sz, 8*sz, 0x22c55e).setAlpha(0.7);
+            }
+
+            // Clearing with flowers and grass detail
+            for (let y = 15; y <= 18; y++) {
+                for (let x = 20; x <= 23; x++) {
+                    this.add.rectangle(x*T+half, y*T+half, T, T, 0x22c55e).setAlpha(0.15);
+                    // Small grass tufts
+                    if (seededRandom(x+20,y+20) > 0.5) {
+                        this.add.rectangle(x*T+half+6, y*T+half+8, 2, 6, 0x4ade80).setAlpha(0.5);
+                        this.add.rectangle(x*T+half-4, y*T+half+10, 2, 5, 0x22c55e).setAlpha(0.5);
+                    }
+                }
+            }
+            // Mushrooms with stems
+            const shrooms = [[21,16],[22,17],[20,18],[23,16],[21,18]];
+            for (const [mx,my] of shrooms) {
+                this.add.rectangle(mx*T+half, my*T+half+10, 3, 6, 0xe7e5e4); // stem
+                this.add.circle(mx*T+half, my*T+half+6, 6, 0xef4444); // cap
+                this.add.circle(mx*T+half-2, my*T+half+4, 2, 0xfafaf9).setAlpha(0.6); // spots
+                this.add.circle(mx*T+half+2, my*T+half+6, 1.5, 0xfafaf9).setAlpha(0.5);
+            }
+            // Fallen log
+            this.add.rectangle(21*T+half, 19*T+half+6, 40, 8, 0x78350f).setAlpha(0.7);
+            this.add.circle(21*T+half-20, 19*T+half+6, 5, 0x92400e).setAlpha(0.6);
+            // Flower patches
+            const flowers = [[20,15],[23,18],[22,16],[21,17]];
+            for (const [fx,fy] of flowers) {
+                const fc = seededRandom(fx,fy) < 0.5 ? 0xfbbf24 : 0xf472b6;
+                this.add.circle(fx*T+half+10, fy*T+half+12, 3, fc);
+                this.add.circle(fx*T+half+14, fy*T+half+10, 2.5, 0xe879f9);
+            }
+
+            // === PATHS with edge stones ===
+            // Horizontal (row 10-11)
+            for (let x = 0; x < MAP_W; x++) {
+                for (let y = 10; y < 12; y++) {
+                    const pv = seededRandom(x,y);
+                    const pc = pv < 0.3 ? 0x92400e : pv < 0.6 ? 0x78350f : pv < 0.85 ? 0xa16207 : 0x854d0e;
+                    this.add.rectangle(x*T+half, y*T+half, T, T, pc);
+                    // Footprints / wheel marks
+                    if (seededRandom(x+30,y+30) > 0.7) {
+                        this.add.ellipse(x*T+half, y*T+half, 6, 3, 0x451a03).setAlpha(0.2);
+                    }
+                }
+                // Path edge stones (top and bottom border)
+                this.add.rectangle(x*T+half, 10*T, T, 4, 0x57534e).setAlpha(0.3);
+                this.add.rectangle(x*T+half, 12*T, T, 4, 0x57534e).setAlpha(0.3);
+            }
+            // Vertical (col 13-14)
+            for (let y = 0; y < MAP_H; y++) {
+                for (let x = 13; x < 15; x++) {
+                    if (y >= 10 && y < 12) continue;
+                    const pv = seededRandom(x,y);
+                    const pc = pv < 0.3 ? 0x92400e : pv < 0.6 ? 0x78350f : pv < 0.85 ? 0xa16207 : 0x854d0e;
+                    this.add.rectangle(x*T+half, y*T+half, T, T, pc);
+                    if (seededRandom(x+30,y+30) > 0.7) {
+                        this.add.ellipse(x*T+half, y*T+half, 6, 3, 0x451a03).setAlpha(0.2);
+                    }
+                }
+                // Edge stones
+                if (y < 10 || y >= 12) {
+                    this.add.rectangle(13*T, y*T+half, 4, T, 0x57534e).setAlpha(0.3);
+                    this.add.rectangle(15*T, y*T+half, 4, T, 0x57534e).setAlpha(0.3);
+                }
+            }
+
+            // Crossroads signpost — MUCH bigger
+            const spX = 13.5*T+half;
+            const spY = 10.5*T+half;
+            this.add.rectangle(spX, spY+16, 10, 56, 0x78350f).setDepth(2);
+            // Sign boards
+            this.add.rectangle(spX, spY-18, 120, 22, 0x92400e).setDepth(2);
+            this.add.rectangle(spX, spY+4, 120, 22, 0x92400e).setDepth(2);
+            // Sign board borders
+            this.add.rectangle(spX, spY-18, 122, 24, 0x451a03).setAlpha(0.3).setDepth(1);
+            this.add.rectangle(spX, spY+4, 122, 24, 0x451a03).setAlpha(0.3).setDepth(1);
+            this.add.text(spX, spY-18, '\u2190  DOCK          MINE  \u2192', {
+                fontSize:'13px', fontFamily:'Inter, sans-serif', color:'#fafaf9', fontStyle:'bold'
+            }).setOrigin(0.5).setDepth(3);
+            this.add.text(spX, spY+4, '\u2190  MARKET     FOREST  \u2192', {
+                fontSize:'13px', fontFamily:'Inter, sans-serif', color:'#fafaf9', fontStyle:'bold'
+            }).setOrigin(0.5).setDepth(3);
+
+            // === REGION LABELS — big & clear ===
+            const lblStyle = {
+                fontSize: '28px',
+                fontFamily: 'Inter, sans-serif',
+                fontStyle: 'bold',
+                color: '#ffffff',
+                shadow: { offsetX: 0, offsetY: 3, color: '#000000', blur: 12, fill: true }
+            };
+            for (const [name, r] of Object.entries(REGIONS)) {
+                const lx = r.cx * T + half;
+                const ly = (r.y1 + 0.5) * T;
+                const lbl = this.add.text(lx, ly, `${r.emoji} ${r.label}`, lblStyle)
+                    .setOrigin(0.5).setDepth(5);
+                // Background pill behind label
+                const bg = this.add.graphics().setDepth(4);
+                bg.fillStyle(0x000000, 0.5);
+                bg.fillRoundedRect(lx - lbl.width/2 - 14, ly - lbl.height/2 - 4, lbl.width + 28, lbl.height + 8, 8);
+            }
+
+            // Region glow borders
+            for (const [name, r] of Object.entries(REGIONS)) {
+                const gfx = this.add.graphics();
+                gfx.lineStyle(2, r.color, 0.25);
+                gfx.strokeRoundedRect(
+                    r.x1*T+2, r.y1*T+2,
+                    (r.x2 - r.x1 + 1)*T - 4,
+                    (r.y2 - r.y1 + 1)*T - 4,
+                    8
+                );
+                gfx.setDepth(4);
+            }
+        }
+
+        drawBuilding(bx, by, bw, bh, wallColor, roofColor, windowColor) {
+            const T = TILE, half = T/2;
+            this.add.rectangle(bx*T + (bw*T)/2, by*T + (bh*T)/2, bw*T, bh*T, wallColor);
+            this.add.rectangle(bx*T + (bw*T)/2, by*T + 4, bw*T + 12, T*0.4, roofColor);
+            // Door
+            this.add.rectangle((bx+Math.floor(bw/2))*T+half, (by+bh-1)*T+half+8, 14, 22, 0x451a03);
+            // Windows
+            if (bw >= 3) {
+                this.add.rectangle((bx+0.7)*T+half, (by+0.6)*T+half, 12, 12, windowColor || 0x93c5fd);
+                this.add.rectangle((bx+bw-1.7)*T+half, (by+0.6)*T+half, 12, 12, windowColor || 0x93c5fd);
+            }
+        }
+
+        drawCrate(cx, cy) {
+            const T = TILE, half = T/2;
+            this.add.rectangle(cx*T+half, cy*T+half, 18, 18, 0x92400e);
+            this.add.rectangle(cx*T+half, cy*T+half, 18, 3, 0x78350f);
+            this.add.rectangle(cx*T+half, cy*T+half, 3, 18, 0x78350f);
+        }
+
+        setupCamera() {
+            this.cameras.main.setBounds(0, 0, WORLD_PX_W, WORLD_PX_H);
+            // Fit as much of the world as possible
+            const el = document.getElementById('game-container');
+            const scaleX = el.clientWidth / WORLD_PX_W;
+            const scaleY = el.clientHeight / WORLD_PX_H;
+            const zoom = Math.min(scaleX, scaleY, 1.2);
+            this.cameras.main.setZoom(zoom);
+            this.cameras.main.centerOn(WORLD_PX_W / 2, WORLD_PX_H / 2);
+
+            // Drag to pan
+            this.input.on('pointermove', (p) => {
+                if (p.isDown) {
+                    this.cameras.main.scrollX -= (p.x - p.prevPosition.x) / this.cameras.main.zoom;
+                    this.cameras.main.scrollY -= (p.y - p.prevPosition.y) / this.cameras.main.zoom;
+                }
+            });
+
+            // Scroll to zoom
+            this.input.on('wheel', (p, go, dx, dy) => {
+                const z = this.cameras.main.zoom;
+                this.cameras.main.setZoom(Phaser.Math.Clamp(z - dy * 0.001, 0.3, 2.5));
+            });
+        }
+
+        animateWater(time) {
+            for (const wt of this.waterTiles) {
+                const phase = Math.sin(time * 0.0015 + wt.x * 0.7 + wt.y * 0.5);
+                const r = (wt.baseColor >> 16) & 0xff;
+                const g = (wt.baseColor >> 8) & 0xff;
+                const b = wt.baseColor & 0xff;
+                const s = Math.floor(phase * 15);
+                wt.tile.setFillStyle(
+                    (Math.max(0,Math.min(255,r+s)) << 16) |
+                    (Math.max(0,Math.min(255,g+s)) << 8) |
+                    Math.max(0,Math.min(255,b+s+8))
+                );
+            }
+        }
+
+        // -------- AGENT SPRITES --------
+        createAgentSprite(agent, px, py) {
+            const T = TILE;
+            const color = walletToColor(agent.wallet);
+            const initial = (agent.name || agent.wallet.slice(2,4))[0].toUpperCase();
+
+            // Shadow
+            const shadow = this.add.ellipse(0, 14, 32, 10, 0x000000).setAlpha(0.35);
+
+            // Body circle — bigger
+            const body = this.add.circle(0, 0, 18, color);
+            body.setStrokeStyle(3, 0xfafafa);
+
+            // Highlight
+            const hl = this.add.circle(-5, -5, 5, 0xffffff).setAlpha(0.25);
+
+            // Initial letter
+            const initText = this.add.text(0, 0, initial, {
+                fontSize: '20px', fontFamily: 'Inter, sans-serif', fontStyle: 'bold', color: '#000'
+            }).setOrigin(0.5);
+
+            // Name label — big and readable
+            const nameText = this.add.text(0, 30, agent.name || agent.wallet.slice(0, 10), {
+                fontSize: '16px', fontFamily: 'Inter, sans-serif', fontStyle: '700', color: '#fafafa',
+                backgroundColor: 'rgba(0,0,0,0.75)', padding: { x: 8, y: 3 }
+            }).setOrigin(0.5);
+
+            // Energy bar
+            const eBarBg = this.add.rectangle(0, -26, 36, 5, 0x27272a);
+            const pct = (agent.energy || 100) / 100;
+            const eBarFill = this.add.rectangle(-18 + pct*18, -26, pct*36, 5,
+                pct > 0.5 ? 0x22c55e : pct > 0.25 ? 0xf59e0b : 0xef4444
+            ).setOrigin(0, 0.5);
+
+            // Bubble — bigger text
+            const bubbleText = this.add.text(0, -46, '', {
+                fontSize: '14px', fontFamily: 'Inter, sans-serif', color: '#09090b',
+                backgroundColor: '#fafafa', padding: { x: 10, y: 5 },
+                shadow: { offsetX:0, offsetY:2, color:'#000', blur:6, fill:true }
+            }).setOrigin(0.5).setVisible(false).setDepth(12);
+
+            const container = this.add.container(px, py, [
+                shadow, body, hl, initText, nameText, eBarBg, eBarFill, bubbleText
+            ]).setDepth(8);
+
+            body.setInteractive({ useHandCursor: true });
+            body.on('pointerdown', () => selectAgent(agent.wallet));
+
+            const sprite = {
+                container, body, nameText, bubbleText, eBarBg, eBarFill,
+                region: agent.region, wallet: agent.wallet, color,
+                bubbleTimer: null
+            };
+            agentSprites[agent.wallet] = sprite;
+            return sprite;
+        }
+
+        removeAgentSprite(wallet) {
+            const s = agentSprites[wallet];
+            if (s) { s.container.destroy(); delete agentSprites[wallet]; }
+        }
+
+        showBubble(wallet, text, duration = 4500) {
+            const s = agentSprites[wallet];
+            if (!s) return;
+            s.bubbleText.setText(text).setVisible(true);
+            if (s.bubbleTimer) clearTimeout(s.bubbleTimer);
+            s.bubbleTimer = setTimeout(() => {
+                if (s.bubbleText) s.bubbleText.setVisible(false);
+            }, duration);
+        }
+
+        updateAgentEnergy(wallet, energy) {
+            const s = agentSprites[wallet];
+            if (!s) return;
+            const pct = energy / 100;
+            s.eBarFill.setSize(pct * 36, 5);
+            s.eBarFill.setPosition(-18, -26);
+            s.eBarFill.setFillStyle(pct > 0.5 ? 0x22c55e : pct > 0.25 ? 0xf59e0b : 0xef4444);
+        }
+
+        moveAgentTo(wallet, newRegion) {
+            const s = agentSprites[wallet];
+            if (!s || s.region === newRegion) return;
+            s.region = newRegion;
+
+            const agents = Object.values(agentSprites).filter(sp => sp.region === newRegion);
+            const pos = getScatterPosition(newRegion, agents.indexOf(s), agents.length);
+
+            // Direct movement — straight line to destination
+            this.tweens.add({
+                targets: s.container,
+                x: pos.x, y: pos.y,
+                duration: 1000, ease: 'Sine.easeInOut'
+            });
+        }
+    }
+
+    // ============================================================
+    // POSITION HELPERS
+    // ============================================================
+    function getScatterPosition(region, index, total) {
+        const r = REGIONS[region];
+        if (!r) return CROSSROADS;
+        const cx = r.cx * TILE + TILE/2;
+        const cy = r.cy * TILE + TILE/2;
+        if (total <= 1) return { x: cx, y: cy };
+        const angle = (2 * Math.PI * index) / Math.max(total, 1);
+        const radius = Math.min(36 + total * 16, 120);
+        return { x: cx + Math.cos(angle) * radius, y: cy + Math.sin(angle) * radius };
+    }
+
+    function repositionAllAgentsInRegion(region) {
+        const agents = Object.values(agentSprites).filter(s => s.region === region);
+        agents.forEach((s, i) => {
+            const pos = getScatterPosition(region, i, agents.length);
+            if (gameScene) {
+                gameScene.tweens.add({
+                    targets: s.container, x: pos.x, y: pos.y,
+                    duration: 350, ease: 'Sine.easeOut'
+                });
+            }
+        });
+    }
+
+    // ============================================================
+    // API POLLING
+    // ============================================================
+    async function safeFetch(url) {
+        try {
+            const resp = await fetch(url);
+            if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+            setConnected(true);
+            return await resp.json();
+        } catch (err) {
+            console.warn('Fetch failed:', url, err);
+            setConnected(false);
+            return null;
+        }
+    }
+
+    function setConnected(ok) {
+        const badge = document.getElementById('conn-badge');
+        const txt = document.getElementById('conn-text');
+        if (ok) {
+            badge.classList.remove('disconnected');
+            txt.textContent = 'Connected';
+        } else {
+            badge.classList.add('disconnected');
+            txt.textContent = 'Disconnected';
+        }
+    }
+
+    async function pollWorld() {
+        const data = await safeFetch(`${API_URL}/world/state`);
+        if (!data) return;
+
+        document.getElementById('h-tick').textContent = data.tick || 0;
+        document.getElementById('h-agents').textContent = data.agent_count || 0;
+        document.getElementById('h-tax').textContent = ((data.tax_rate || 0.05) * 100).toFixed(0) + '%';
+
+        if (data.market_prices) {
+            updatePrice('p-iron', 'iron', data.market_prices.iron);
+            updatePrice('p-wood', 'wood', data.market_prices.wood);
+            updatePrice('p-fish', 'fish', data.market_prices.fish);
+            previousPrices = { ...data.market_prices };
+        }
+
+        const evDiv = document.getElementById('events-list');
+        if (data.active_events && data.active_events.length > 0) {
+            evDiv.innerHTML = data.active_events.map(e => `
+                <div class="event-item">
+                    <div class="event-type">${e.type || ''}</div>
+                    <div class="event-desc">${e.description || ''}</div>
+                    <div class="event-timer">${e.remaining || 0} ticks remaining</div>
+                </div>`).join('');
+        } else {
+            evDiv.innerHTML = '<div class="empty-state">No active events</div>';
+        }
+    }
+
+    function updatePrice(elemId, name, value) {
+        const el = document.getElementById(elemId);
+        const prev = previousPrices[name];
+        el.textContent = value + 'c';
+        el.className = 'price-val';
+        if (prev !== undefined && prev !== value) {
+            el.classList.add(value > prev ? 'up' : 'down');
+        }
+    }
+
+    async function pollAgents() {
+        const data = await safeFetch(`${API_URL}/agents`);
+        if (!data || !data.agents) return;
+        const agents = data.agents;
+        const currentWallets = new Set();
+
+        for (const agent of agents) {
+            currentWallets.add(agent.wallet);
+            const prev = previousAgents[agent.wallet];
+            if (!prev) {
+                const idx = Object.values(agentSprites).filter(s => s.region === agent.region).length;
+                const total = agents.filter(a => a.region === agent.region).length;
+                const pos = getScatterPosition(agent.region, idx, total);
+                if (gameScene) gameScene.createAgentSprite(agent, pos.x, pos.y);
+            } else if (prev.region !== agent.region) {
+                if (gameScene) gameScene.moveAgentTo(agent.wallet, agent.region);
+                setTimeout(() => {
+                    repositionAllAgentsInRegion(prev.region);
+                    repositionAllAgentsInRegion(agent.region);
+                }, 1500);
+            }
+            if (gameScene) gameScene.updateAgentEnergy(agent.wallet, agent.energy);
+            previousAgents[agent.wallet] = { ...agent };
+        }
+
+        for (const wallet of Object.keys(previousAgents)) {
+            if (!currentWallets.has(wallet)) {
+                if (gameScene) gameScene.removeAgentSprite(wallet);
+                delete previousAgents[wallet];
+            }
+        }
+        updateAgentList(agents);
+    }
+
+    async function pollActions() {
+        const data = await safeFetch(`${API_URL}/actions/recent?limit=20`);
+        if (!data || !data.actions) return;
+        const logDiv = document.getElementById('action-log');
+
+        for (const action of data.actions) {
+            const aid = `${action.wallet}_${action.tick}_${action.action}_${action.timestamp || ''}`;
+            if (processedActions.has(aid)) continue;
+            processedActions.add(aid);
+            if (gameScene) gameScene.showBubble(action.wallet, actionToBubble(action));
+        }
+
+        if (data.actions.length > 0) {
+            const icons = {
+                harvest:'\u26cf\ufe0f', move:'\ud83d\udeb6', place_order:'\ud83d\udcc8',
+                rest:'\ud83d\ude34', raid:'\u2694\ufe0f', negotiate:'\ud83e\udd1d', register:'\ud83d\udcdd'
+            };
+            logDiv.innerHTML = data.actions.map(a => {
+                const icon = icons[a.action] || '\u25b8';
+                const cls = a.success ? 'success' : 'fail';
+                const name = previousAgents[a.wallet]?.name || (a.wallet||'').slice(0,8);
+                const time = a.timestamp ? new Date(a.timestamp).toLocaleTimeString() : '';
+                return `<div class="log-entry ${cls}">
+                    <span class="log-time">T${a.tick}</span>
+                    <span class="log-icon">${icon}</span>
+                    <span class="log-agent">${name}</span>
+                    <span class="log-tag ${a.action}">${a.action}</span>
+                    <span class="log-msg">${a.message || ''}</span>
+                </div>`;
+            }).join('');
+        }
+
+        if (processedActions.size > 500) {
+            const arr = Array.from(processedActions);
+            processedActions = new Set(arr.slice(-200));
+        }
+    }
+
+    function actionToBubble(action) {
+        const a = action.action, msg = action.message || '';
+        const icons = {harvest:'\u26cf\ufe0f', move:'\ud83d\udeb6', place_order:'\ud83d\udcb0',
+            rest:'\ud83d\ude34', raid:'\u2694\ufe0f', negotiate:'\ud83e\udd1d'};
+        return (icons[a] || '') + ' ' + msg;
+    }
+
+    // ============================================================
+    // UI UPDATES
+    // ============================================================
+    function updateAgentList(agents) {
+        const listDiv = document.getElementById('agent-list');
+        if (agents.length === 0) {
+            listDiv.innerHTML = '<div class="empty-state">No agents yet</div>';
+            return;
+        }
+        const sorted = [...agents].sort((a, b) => b.credits - a.credits);
+        listDiv.innerHTML = sorted.map((a, i) => {
+            const color = '#' + walletToColor(a.wallet).toString(16).padStart(6, '0');
+            const sel = selectedAgent === a.wallet ? ' selected' : '';
+            const initial = (a.name || a.wallet.slice(2,3))[0].toUpperCase();
+            return `<div class="agent-card${sel}" onclick="selectAgent('${a.wallet}')">
+                <div class="agent-avatar" style="background:${color}">${initial}</div>
+                <div class="agent-card-info">
+                    <div class="agent-card-name">${a.name || a.wallet.slice(0,10)}</div>
+                    <div class="agent-card-sub">
+                        <span class="region-pill region-${a.region}">${a.region}</span>
+                        AP ${a.energy}
+                    </div>
+                </div>
+                <div class="agent-card-credits">${a.credits}c</div>
+            </div>`;
+        }).join('');
+    }
+
+    function selectAgent(wallet) {
+        selectedAgent = wallet;
+        const s = agentSprites[wallet];
+        if (s && gameScene) {
+            gameScene.cameras.main.pan(s.container.x, s.container.y, 500, 'Sine.easeInOut');
+            gameScene.tweens.add({
+                targets: s.body, scaleX: 1.4, scaleY: 1.4,
+                duration: 200, yoyo: true, ease: 'Sine.easeInOut'
+            });
+        }
+        document.querySelectorAll('.agent-card').forEach(c => c.classList.remove('selected'));
+        document.querySelectorAll('.agent-card').forEach(c => {
+            if (c.getAttribute('onclick')?.includes(wallet)) c.classList.add('selected');
+        });
+    }
+
+    // ============================================================
+    // POLLING START
+    // ============================================================
+    function startPolling() {
+        pollWorld(); pollAgents();
+        setTimeout(pollActions, 500);
+        setInterval(pollWorld, 3000);
+        setInterval(pollAgents, 3000);
+        setInterval(pollActions, 2000);
+    }
+
+    // ============================================================
+    // PHASER INIT
+    // ============================================================
+    const config = {
+        type: Phaser.AUTO,
+        parent: 'game-container',
+        width: WORLD_PX_W,
+        height: WORLD_PX_H,
+        pixelArt: false,
+        antialias: true,
+        physics: { default: 'arcade', arcade: { gravity: { y: 0 }, debug: false } },
+        scene: [WorldScene],
+        scale: {
+            mode: Phaser.Scale.RESIZE,
+            autoCenter: Phaser.Scale.CENTER_BOTH
+        },
+        backgroundColor: '#09090b'
+    };
+
+    const game = new Phaser.Game(config);
+    </script>
+</body>
+</html>

@@ -1,0 +1,98 @@
+# Environment and secrets
+.env
+.env.local
+.env.*.local
+*.pem
+*_private_key*
+
+# Wallet private keys (NEVER commit these)
+wallets/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+venv/
+.venv/
+ENV/
+
+# Node.js / Contracts
+node_modules/
+contracts/node_modules/
+contracts/cache/
+contracts/artifacts/
+contracts/typechain-types/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Database
+*.db
+*.sqlite
+
+# Test
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Build
+*.pyc
+*.pyo
+
+# Temp files
+*.tmp
+*.temp
+~$*
+
+# Deployment info (contains addresses but keep for reference)
+# treasury_deployment.json
+# treasury_v2_devnet.json
+
+# Chinese documentation (for international hackathon)
+*中文*
+*设计*
+*PRD*
+*.docx
+
+# Specific Chinese design documents
+PORT_SOL_COMPLETE_DESIGN.md
+MOLTBOOK_TEST_SUMMARY.md
+HACKATHON_STATUS.md
+demo_summary.md
+World Model Agent PRD.docx
+~$*.docx
+
+# Runtime generated files
+events.jsonl
+moltbook_demo_events.jsonl
+moltbook_*.json
+terminals/
