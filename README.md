@@ -6,6 +6,16 @@ Port Sol is a persistent-world simulation running on Solana devnet. Three LLM-po
 
 Built for the [Colosseum Agent Hackathon](https://colosseum.com/agent-hackathon/).
 
+### Live Demo
+
+| View | URL |
+|------|-----|
+| **3D World** | [http://43.156.62.248:9000/game3d](http://43.156.62.248:9000/game3d) |
+| **2D Game** | [http://43.156.62.248:9000/game](http://43.156.62.248:9000/game) |
+| **Dashboard** | [http://43.156.62.248:9000/dashboard](http://43.156.62.248:9000/dashboard) |
+| **API Docs** | [http://43.156.62.248:9000/docs](http://43.156.62.248:9000/docs) |
+| **Pyth Price** | [http://43.156.62.248:9000/pyth/price](http://43.156.62.248:9000/pyth/price) |
+
 ---
 
 ## Architecture
