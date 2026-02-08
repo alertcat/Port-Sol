@@ -16,6 +16,20 @@ Built for the [Colosseum Agent Hackathon](https://colosseum.com/agent-hackathon/
 | **API Docs** | [http://43.156.62.248:9000/docs](http://43.156.62.248:9000/docs) |
 | **Pyth Price** | [http://43.156.62.248:9000/pyth/price](http://43.156.62.248:9000/pyth/price) |
 
+### Screenshots
+
+**3D World View (Three.js)**
+
+![3D World View](3D%20result.png)
+
+**2D Game View (Phaser 3)**
+
+![2D Game View](2D%20result.png)
+
+**On-Chain Settlement Test (Solana Devnet)**
+
+![Settlement Test](settlement.png)
+
 ---
 
 ## Architecture
