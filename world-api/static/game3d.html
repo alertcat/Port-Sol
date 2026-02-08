@@ -9,14 +9,14 @@
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=IBM+Plex+Sans:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #080611;
-            --panel: #171126;
-            --line: #4f3a73;
-            --text: #f3ebff;
-            --muted: #beaed8;
+            --bg: #09090b;
+            --panel: #111118;
+            --line: #2a2a34;
+            --text: #f4f4f5;
+            --muted: #9ca3af;
             --good: #31d38d;
             --bad: #ff6b6b;
-            --accent: #c892ff;
+            --accent: #c084fc;
         }
 
         * {
@@ -28,9 +28,9 @@
         body {
             font-family: "IBM Plex Sans", sans-serif;
             background:
-                radial-gradient(circle at 20% 12%, #2b0f4d 0%, transparent 44%),
-                radial-gradient(circle at 88% 6%, #1d1237 0%, transparent 40%),
-                linear-gradient(165deg, #090412 0%, #120a1f 55%, #0a0613 100%);
+                radial-gradient(circle at 20% 12%, #0f2045 0%, transparent 42%),
+                radial-gradient(circle at 88% 6%, #2a183e 0%, transparent 36%),
+                linear-gradient(165deg, #05070d 0%, #090f1b 55%, #060a11 100%);
             color: var(--text);
             overflow: hidden;
             min-height: 100vh;
@@ -50,7 +50,7 @@
             gap: 14px;
             padding: 10px 14px;
             border-bottom: 1px solid var(--line);
-            background: linear-gradient(180deg, rgba(22, 14, 37, 0.96), rgba(13, 9, 24, 0.94));
+            background: linear-gradient(180deg, rgba(12, 16, 26, 0.95), rgba(7, 10, 17, 0.92));
             backdrop-filter: blur(4px);
         }
 
@@ -64,7 +64,7 @@
         }
 
         .brand b {
-            color: #c892ff;
+            color: #c084fc;
             font-weight: 700;
         }
 
@@ -102,9 +102,9 @@
         }
 
         .btn {
-            border: 1px solid #654496;
-            background: linear-gradient(180deg, #27193e, #1d1530);
-            color: #f1e8ff;
+            border: 1px solid #33507a;
+            background: linear-gradient(180deg, #16243c, #111b2f);
+            color: #dfe9ff;
             border-radius: 8px;
             padding: 7px 10px;
             font-size: 12px;
@@ -114,29 +114,29 @@
 
         .btn:hover {
             transform: translateY(-1px);
-            border-color: #ba8fff;
+            border-color: #59bfff;
         }
 
         .btn.active {
-            border-color: #d2abff;
-            background: linear-gradient(180deg, #44256e, #311f56);
-            color: #fbf7ff;
+            border-color: #c084fc;
+            background: linear-gradient(180deg, #3b2a55, #302145);
+            color: #f8f5ff;
         }
 
         .link {
             text-decoration: none;
-            border: 1px solid #7358a8;
-            color: #f0e4ff;
+            border: 1px solid #455a7e;
+            color: #d9e9ff;
             border-radius: 8px;
             padding: 7px 10px;
             font-size: 12px;
-            background: rgba(34, 22, 54, 0.72);
+            background: rgba(18, 25, 39, 0.75);
         }
 
         .sidebar,
         .inspector {
             overflow-y: auto;
-            background: linear-gradient(180deg, rgba(22, 14, 38, 0.96), rgba(15, 10, 27, 0.94));
+            background: linear-gradient(180deg, rgba(13, 20, 35, 0.95), rgba(10, 15, 27, 0.92));
         }
 
         .sidebar {
@@ -163,9 +163,9 @@
             position: absolute;
             left: 12px;
             bottom: 10px;
-            border: 1px solid rgba(165, 124, 233, 0.48);
-            background: rgba(24, 14, 39, 0.76);
-            color: #dac6ff;
+            border: 1px solid rgba(69, 106, 168, 0.45);
+            background: rgba(8, 12, 20, 0.75);
+            color: #aac1ea;
             border-radius: 8px;
             font-size: 11px;
             line-height: 1.45;
@@ -182,14 +182,14 @@
             font-size: 12px;
             letter-spacing: 1px;
             text-transform: uppercase;
-            color: #d0a9ff;
+            color: #b7c9ef;
             margin-bottom: 8px;
         }
 
         .card {
-            border: 1px solid #563d7f;
+            border: 1px solid #2f4060;
             border-radius: 10px;
-            background: linear-gradient(180deg, rgba(36, 24, 56, 0.88), rgba(25, 18, 43, 0.88));
+            background: linear-gradient(180deg, rgba(20, 31, 51, 0.86), rgba(16, 24, 40, 0.86));
             padding: 10px;
             margin-bottom: 8px;
         }
@@ -202,12 +202,17 @@
         .agent-name {
             font-size: 14px;
             font-weight: 700;
+            max-width: 180px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .agent-meta {
             margin-top: 4px;
-            color: #ccb8e8;
+            color: #aec1e4;
             font-size: 12px;
+            overflow-wrap: anywhere;
         }
 
         .row {
@@ -225,13 +230,13 @@
             font-size: 11px;
             padding: 3px 7px;
             border-radius: 999px;
-            border: 1px solid #70579f;
-            color: #e7d8ff;
+            border: 1px solid #425272;
+            color: #d5e4ff;
         }
 
         .region-count {
             font-size: 12px;
-            color: #d8c4f8;
+            color: #bed1f2;
         }
 
         .list {
@@ -241,14 +246,14 @@
         }
 
         .item {
-            border: 1px solid #563d7f;
+            border: 1px solid #2f4060;
             border-radius: 10px;
-            background: linear-gradient(180deg, rgba(36, 24, 56, 0.88), rgba(25, 18, 43, 0.88));
+            background: linear-gradient(180deg, rgba(20, 31, 51, 0.86), rgba(16, 24, 40, 0.86));
             padding: 8px;
         }
 
         .item .head {
-            color: #f0e5ff;
+            color: #d8e8ff;
             font-size: 12px;
             font-weight: 700;
         }
@@ -256,7 +261,7 @@
         .item .body {
             margin-top: 3px;
             font-size: 12px;
-            color: #ccb9e5;
+            color: #a9bad8;
             line-height: 1.35;
             overflow-wrap: anywhere;
             word-break: break-word;
@@ -269,18 +274,145 @@
         }
 
         .price-cell {
-            border: 1px solid #563d7f;
+            border: 1px solid #2f4060;
             border-radius: 10px;
-            background: linear-gradient(180deg, rgba(36, 24, 56, 0.88), rgba(25, 18, 43, 0.88));
+            background: linear-gradient(180deg, rgba(20, 31, 51, 0.86), rgba(16, 24, 40, 0.86));
             text-align: center;
             padding: 10px 8px;
         }
 
         .price-cell .k {
-            color: #ccb9ea;
+            color: #9fb5da;
             font-size: 11px;
             text-transform: uppercase;
             letter-spacing: 1px;
+        }
+
+        .top-value-tax {
+            color: #fbbf24;
+        }
+
+        .top-value-pyth {
+            color: #60a5fa;
+        }
+
+        .region-pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 8px;
+            border-radius: 9999px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .region-dock {
+            background: rgba(59, 130, 246, 0.15);
+            color: #60a5fa;
+        }
+
+        .region-mine {
+            background: rgba(245, 158, 11, 0.15);
+            color: #fbbf24;
+        }
+
+        .region-forest {
+            background: rgba(34, 197, 94, 0.15);
+            color: #4ade80;
+        }
+
+        .region-market {
+            background: rgba(168, 85, 247, 0.15);
+            color: #c084fc;
+        }
+
+        .rank-badge {
+            font-size: 11px;
+            font-weight: 700;
+            border-radius: 999px;
+            padding: 2px 8px;
+            border: 1px solid #3c4e6f;
+            background: rgba(37, 49, 72, 0.55);
+            color: #dbeafe;
+        }
+
+        .rank-1 {
+            border-color: rgba(245, 158, 11, 0.55);
+            background: rgba(245, 158, 11, 0.15);
+            color: #fbbf24;
+        }
+
+        .rank-2 {
+            border-color: rgba(156, 163, 175, 0.6);
+            background: rgba(156, 163, 175, 0.15);
+            color: #d1d5db;
+        }
+
+        .rank-3 {
+            border-color: rgba(217, 119, 6, 0.55);
+            background: rgba(217, 119, 6, 0.15);
+            color: #f59e0b;
+        }
+
+        .credits-up {
+            color: #22c55e;
+            font-weight: 700;
+        }
+
+        .action-tag {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 999px;
+            padding: 2px 8px;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.35px;
+            text-transform: uppercase;
+            border: 1px solid transparent;
+            margin-left: 4px;
+        }
+
+        .action-tag.harvest {
+            background: rgba(34, 197, 94, 0.15);
+            color: #4ade80;
+            border-color: rgba(34, 197, 94, 0.3);
+        }
+
+        .action-tag.move {
+            background: rgba(59, 130, 246, 0.15);
+            color: #60a5fa;
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+
+        .action-tag.place_order {
+            background: rgba(168, 85, 247, 0.15);
+            color: #c084fc;
+            border-color: rgba(168, 85, 247, 0.35);
+        }
+
+        .action-tag.rest {
+            background: rgba(113, 113, 122, 0.15);
+            color: #a1a1aa;
+            border-color: rgba(113, 113, 122, 0.28);
+        }
+
+        .action-tag.raid {
+            background: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+            border-color: rgba(239, 68, 68, 0.35);
+        }
+
+        .action-tag.negotiate {
+            background: rgba(245, 158, 11, 0.15);
+            color: #fbbf24;
+            border-color: rgba(245, 158, 11, 0.3);
+        }
+
+        .action-tag.register {
+            background: rgba(34, 197, 94, 0.15);
+            color: #4ade80;
+            border-color: rgba(34, 197, 94, 0.3);
         }
 
         .price-cell .v {
@@ -341,12 +473,15 @@
         <div class="meta">
             <span>Tick <b id="tick" class="accent">-</b></span>
             <span>Agents <b id="agent-count" class="accent">-</b></span>
+            <span>Tax <b id="tax" class="top-value-tax">-</b></span>
+            <span>Pyth SOL/USD <b id="sol-price" class="top-value-pyth">-</b></span>
             <span id="conn" class="pill">Connected</span>
         </div>
         <div class="toolbar">
             <button class="btn active" data-camera="overview">Overview</button>
             <button class="btn" data-camera="free">Free Orbit</button>
             <button class="btn" data-camera="follow">Follow Agent</button>
+            <button class="btn" data-view="center">Center</button>
             <button class="btn" data-region="dock">Dock</button>
             <button class="btn" data-region="mine">Mine</button>
             <button class="btn" data-region="market">Market</button>
@@ -464,7 +599,7 @@ const fatal = window.__showGame3DError || ((msg) => console.error(msg));
 const REGION_CONFIG = {
     dock: {
         label: "Dock",
-        color: 0x2f88ff,
+        color: 0x3b82f6,
         center: new THREE.Vector3(-18, 0, -14),
         gate: new THREE.Vector3(-6, 0, -6),
         cameraOffset: new THREE.Vector3(-12, 14, -10),
@@ -472,7 +607,7 @@ const REGION_CONFIG = {
     },
     mine: {
         label: "Mine",
-        color: 0xf0a326,
+        color: 0xf59e0b,
         center: new THREE.Vector3(18, 0, -14),
         gate: new THREE.Vector3(6, 0, -6),
         cameraOffset: new THREE.Vector3(10, 14, -10),
@@ -480,7 +615,7 @@ const REGION_CONFIG = {
     },
     market: {
         label: "Market",
-        color: 0x1ad07a,
+        color: 0xa855f7,
         center: new THREE.Vector3(-18, 0, 14),
         gate: new THREE.Vector3(-6, 0, 6),
         cameraOffset: new THREE.Vector3(-12, 14, 10),
@@ -488,7 +623,7 @@ const REGION_CONFIG = {
     },
     forest: {
         label: "Forest",
-        color: 0x3fcc56,
+        color: 0x22c55e,
         center: new THREE.Vector3(18, 0, 14),
         gate: new THREE.Vector3(6, 0, 6),
         cameraOffset: new THREE.Vector3(10, 14, 10),
@@ -527,17 +662,17 @@ function setConn(ok) {
     el.textContent = ok ? "Connected" : "Disconnected";
 }
 
-async function safeFetch(path) {
+async function safeFetch(path, affectConn = true) {
     try {
         const res = await fetch(API + path);
         if (!res.ok) {
-            setConn(false);
+            if (affectConn) setConn(false);
             return null;
         }
-        setConn(true);
+        if (affectConn) setConn(true);
         return await res.json();
     } catch (_err) {
-        setConn(false);
+        if (affectConn) setConn(false);
         return null;
     }
 }
@@ -599,10 +734,56 @@ function createTextSprite(text, opts = {}) {
     return sprite;
 }
 
+function normalizeBubbleText(text, maxLen = 72) {
+    const clean = String(text || "").replace(/\s+/g, " ").trim();
+    if (!clean) return "Action executed";
+    if (clean.length <= maxLen) return clean;
+    return `${clean.slice(0, Math.max(8, maxLen - 3))}...`;
+}
+
+function bubbleTextFromAction(action) {
+    if (!action) return "Action executed";
+    const content = action.message || action.action || "action";
+    return normalizeBubbleText(content, 72);
+}
+
+function createBubbleSprite(text) {
+    const msg = normalizeBubbleText(text, 72);
+    const width = Math.min(430, Math.max(240, msg.length * 8 + 96));
+    return createTextSprite(msg, {
+        width,
+        height: 86,
+        bg: "rgba(20, 22, 33, 0.95)",
+        fg: "#f4f7ff",
+        border: "rgba(127, 189, 255, 0.92)",
+        font: "600 20px IBM Plex Sans"
+    });
+}
+
+function clearBubble(model) {
+    if (!model || !model.bubble) return;
+    if (model.bubble.material && model.bubble.material.map) model.bubble.material.map.dispose();
+    if (model.bubble.material) model.bubble.material.dispose();
+    model.root.remove(model.bubble);
+    model.bubble = null;
+}
+
+function showAgentBubble(model, text, durationMs = 3200) {
+    if (!model || !model.root) return;
+    clearBubble(model);
+    model.bubble = createBubbleSprite(text);
+    model.bubble.position.set(0, 5.1, 0);
+    model.bubble.visible = true;
+    model.bubbleBaseScale = model.bubble.scale.clone();
+    model.bubbleUntil = performance.now() + durationMs;
+    model.bubbleLift = (model.crowdIndex % 3) * 0.52 + Math.min(0.9, Math.floor(model.crowdIndex / 3) * 0.2);
+    model.root.add(model.bubble);
+}
+
 function createBaseWorld() {
     scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x060913);
-    scene.fog = new THREE.Fog(0x04070f, 42, 98);
+    scene.background = new THREE.Color(0x070911);
+    scene.fog = new THREE.Fog(0x06070c, 42, 98);
 
     const root = document.getElementById("scene");
     if (!root) {
@@ -645,11 +826,11 @@ function createBaseWorld() {
 }
 
 function buildLighting() {
-    const hemi = new THREE.HemisphereLight(0xa3d8ff, 0x0b0d12, 0.85);
+    const hemi = new THREE.HemisphereLight(0x93c5fd, 0x09090b, 0.72);
     scene.add(hemi);
 
-    const sun = new THREE.DirectionalLight(0xffffff, 1.05);
-    sun.position.set(24, 34, 10);
+    const sun = new THREE.DirectionalLight(0xffe7b0, 1.35);
+    sun.position.set(-34, 42, -18);
     sun.castShadow = true;
     sun.shadow.mapSize.width = 2048;
     sun.shadow.mapSize.height = 2048;
@@ -661,9 +842,23 @@ function buildLighting() {
     sun.shadow.camera.bottom = -48;
     scene.add(sun);
 
-    const fill = new THREE.PointLight(0x4ba6ff, 0.45, 140);
-    fill.position.set(0, 14, 0);
+    const fill = new THREE.PointLight(0x4ba6ff, 0.35, 140);
+    fill.position.set(14, 12, 6);
     scene.add(fill);
+
+    const sunSphere = new THREE.Mesh(
+        new THREE.SphereGeometry(2.8, 28, 20),
+        new THREE.MeshBasicMaterial({ color: 0xffd985, transparent: true, opacity: 0.92 })
+    );
+    sunSphere.position.copy(sun.position).setY(44);
+    scene.add(sunSphere);
+
+    const sunAura = new THREE.Mesh(
+        new THREE.SphereGeometry(4.6, 28, 20),
+        new THREE.MeshBasicMaterial({ color: 0xffc75b, transparent: true, opacity: 0.25 })
+    );
+    sunAura.position.copy(sunSphere.position);
+    scene.add(sunAura);
 }
 
 function buildGroundAndRoads() {
@@ -944,6 +1139,13 @@ function createAgentModel(agent) {
 
     const limbMat = new THREE.MeshStandardMaterial({ color: 0xd9e2ef, roughness: 0.55, metalness: 0.08 });
 
+    const shadow = new THREE.Mesh(
+        new THREE.CircleGeometry(0.95, 24),
+        new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.28 })
+    );
+    shadow.rotation.x = -Math.PI / 2;
+    shadow.position.y = 0.02;
+
     const torso = new THREE.Mesh(new THREE.CapsuleGeometry(0.45, 1.0, 6, 12), bodyMat);
     torso.position.set(0, 1.45, 0);
     torso.castShadow = true;
@@ -997,7 +1199,7 @@ function createAgentModel(agent) {
     });
     label.position.set(0, 3.45, 0);
 
-    root.add(torso, head, eye, armL, armR, legL, legR, backpack, ring, label);
+    root.add(shadow, torso, head, eye, armL, armR, legL, legR, backpack, ring, label);
 
     [torso, head, armL, armR, legL, legR, backpack].forEach((mesh) => {
         mesh.userData = { kind: "agent", wallet: agent.wallet };
@@ -1010,24 +1212,46 @@ function createAgentModel(agent) {
         root,
         ring,
         label,
+        labelBaseScale: label.scale.clone(),
+        bubble: null,
+        bubbleBaseScale: null,
+        bubbleUntil: 0,
+        bubbleLift: 0,
         displayName,
         target: new THREE.Vector3(),
         route: [],
         speed: 6 + Math.random() * 2.4,
         phase: Math.random() * Math.PI * 2,
+        moveBlend: 0,
+        headingTarget: 0,
+        crowdIndex: 0,
+        crowdTotal: 1,
         data: agent,
         region: agent.region,
         selected: false,
         isPlaceholder: !!agent.placeholder,
-        initialized: false
+        initialized: false,
+        parts: {
+            shadow,
+            torso,
+            head,
+            armL,
+            armR,
+            legL,
+            legR
+        }
     };
 }
 
 function scatterPosition(regionId, idx, total) {
     const cfg = REGION_CONFIG[regionId] || REGION_CONFIG.dock;
     const count = Math.max(total, 1);
-    const angle = (idx / count) * Math.PI * 2;
-    const radius = 2.2 + (idx % 4) * 0.6;
+    const perRing = 8;
+    const ring = Math.floor(idx / perRing);
+    const ringIndex = idx % perRing;
+    const densityBoost = Math.max(0, count - 4) * 0.26;
+    const angle = (ringIndex / perRing) * Math.PI * 2 + ring * 0.33;
+    const radius = 2.8 + densityBoost + ring * 1.75 + (ringIndex % 2) * 0.45;
     return new THREE.Vector3(
         cfg.center.x + Math.cos(angle) * radius,
         1.05,
@@ -1070,6 +1294,7 @@ function replaceLabel(model, text) {
         font: "600 24px IBM Plex Sans"
     });
     model.label.position.set(0, 3.45, 0);
+    model.labelBaseScale = model.label.scale.clone();
     model.root.add(model.label);
 }
 
@@ -1091,6 +1316,8 @@ function upsertAgents(renderAgents) {
         model.data = agent;
         const inRegion = regionGroups[agent.region] || [agent];
         const idx = Math.max(0, inRegion.findIndex((x) => x.wallet === agent.wallet));
+        model.crowdIndex = idx;
+        model.crowdTotal = Math.max(1, inRegion.length);
         const dest = scatterPosition(agent.region, idx, inRegion.length);
         model.target.copy(dest);
 
@@ -1113,6 +1340,7 @@ function upsertAgents(renderAgents) {
     Array.from(agentModels.keys()).forEach((wallet) => {
         if (!wallets.has(wallet)) {
             const model = agentModels.get(wallet);
+            clearBubble(model);
             model.root.traverse((obj) => {
                 if (obj.material && obj.material.map && obj.material.map.dispose) {
                     obj.material.map.dispose();
@@ -1186,15 +1414,22 @@ function renderAgentsPanel() {
     }
 
     const sorted = [...latestAgents].sort((a, b) => b.credits - a.credits);
-    el.innerHTML = sorted.map((a) => {
+    el.innerHTML = sorted.map((a, idx) => {
         const selectedClass = a.wallet === selectedAgentWallet ? "active" : "";
+        const rankClass = idx === 0 ? "rank-1" : idx === 1 ? "rank-2" : idx === 2 ? "rank-3" : "";
+        const regionClass = ["dock", "mine", "forest", "market"].includes(a.region) ? `region-${a.region}` : "region-market";
         return `
             <div class="card">
                 <div class="row">
-                    <div class="agent-name">${a.name || shortWallet(a.wallet)}</div>
+                    <span class="rank-badge ${rankClass}">#${idx + 1}</span>
                     <button class="btn ${selectedClass}" data-select-wallet="${a.wallet}">Track</button>
                 </div>
-                <div class="agent-meta">${a.region} | AP ${a.energy} | Credits ${a.credits}</div>
+                <div class="agent-name">${a.name || shortWallet(a.wallet)}</div>
+                <div class="row">
+                    <span class="region-pill ${regionClass}">${a.region}</span>
+                    <span class="credits-up">${a.credits} credits</span>
+                </div>
+                <div class="agent-meta">AP ${a.energy} | REP ${a.reputation ?? 0}</div>
                 <div class="muted">Wallet ${shortWallet(a.wallet)}</div>
             </div>
         `;
@@ -1257,11 +1492,23 @@ function renderActions(actions) {
         return;
     }
 
+    const icons = {
+        harvest: "⛏️",
+        move: "🧭",
+        place_order: "💰",
+        rest: "🛏️",
+        raid: "⚔️",
+        negotiate: "🤝",
+        register: "✅"
+    };
+
     el.innerHTML = actions.map((a) => {
         const cls = a.success ? "ok" : "danger";
+        const action = a.action || "action";
+        const icon = icons[action] || "📝";
         return `
             <div class="item">
-                <div class="head">${a.action || "action"} <span class="${cls}">${a.success ? "ok" : "fail"}</span></div>
+                <div class="head">${icon} ${shortWallet(a.wallet || "")} <span class="action-tag ${action}">${action}</span> <span class="${cls}">${a.success ? "ok" : "fail"}</span></div>
                 <div class="body">${a.message || ""}</div>
                 <div class="body muted">tick ${a.tick ?? "-"} | ${shortWallet(a.wallet || "")}</div>
             </div>
@@ -1286,6 +1533,27 @@ function bindRegionButtons() {
             focusRegion(region);
         });
     });
+}
+
+function bindViewButtons() {
+    document.querySelectorAll("[data-view]").forEach((btn) => {
+        if (btn.dataset.viewBound === "1") return;
+        btn.dataset.viewBound = "1";
+        btn.addEventListener("click", () => {
+            const view = btn.getAttribute("data-view");
+            if (view === "center") {
+                centerCamera();
+            }
+        });
+    });
+}
+
+function centerCamera() {
+    selectedRegion = null;
+    setCameraMode("overview");
+    cameraGoal.set(0, 34, 36);
+    lookGoal.set(0, 0, 0);
+    renderRegionsPanel();
 }
 
 function updateCameraButtonState() {
@@ -1396,12 +1664,16 @@ function updateRegionAnimations(timeSec) {
 
 function advanceAgent(model, dt, timeSec) {
     const pos = model.root.position;
+    const toTargetX = model.target.x - pos.x;
+    const toTargetZ = model.target.z - pos.z;
+    let moving = false;
 
     if (model.route.length > 0) {
         const next = model.route[0];
         const dir = new THREE.Vector3(next.x - pos.x, 0, next.z - pos.z);
         const dist = dir.length();
         const step = model.speed * dt;
+        moving = dist > 0.03;
 
         if (dist <= step || dist < 0.05) {
             pos.x = next.x;
@@ -1415,16 +1687,79 @@ function advanceAgent(model, dt, timeSec) {
 
         const lookX = model.route[0]?.x ?? model.target.x;
         const lookZ = model.route[0]?.z ?? model.target.z;
-        model.root.rotation.y = Math.atan2(lookX - pos.x, lookZ - pos.z);
+        model.headingTarget = Math.atan2(lookX - pos.x, lookZ - pos.z);
     } else {
-        pos.x += (model.target.x - pos.x) * Math.min(1, dt * 3.2);
-        pos.z += (model.target.z - pos.z) * Math.min(1, dt * 3.2);
+        const remaining = Math.hypot(toTargetX, toTargetZ);
+        moving = remaining > 0.06;
+        pos.x += toTargetX * Math.min(1, dt * 3.2);
+        pos.z += toTargetZ * Math.min(1, dt * 3.2);
+        if (moving) {
+            model.headingTarget = Math.atan2(toTargetX, toTargetZ);
+        }
     }
 
-    const bob = Math.sin(timeSec * 4 + model.phase) * 0.08;
+    const yawDelta = Math.atan2(
+        Math.sin(model.headingTarget - model.root.rotation.y),
+        Math.cos(model.headingTarget - model.root.rotation.y)
+    );
+    model.root.rotation.y += yawDelta * Math.min(1, dt * 8);
+
+    const moveTarget = moving ? 1 : 0;
+    model.moveBlend += (moveTarget - model.moveBlend) * Math.min(1, dt * 7);
+
+    const gait = Math.sin(timeSec * (7.8 + model.speed * 0.22) + model.phase) * 0.52 * model.moveBlend;
+    const bob = Math.sin(timeSec * (4 + model.moveBlend * 4) + model.phase) * (0.05 + model.moveBlend * 0.08);
     pos.y = 1.0 + bob;
+
+    if (model.parts) {
+        model.parts.armL.rotation.x = gait;
+        model.parts.armR.rotation.x = -gait;
+        model.parts.legL.rotation.x = -gait * 0.9;
+        model.parts.legR.rotation.x = gait * 0.9;
+        model.parts.torso.rotation.x = 0.07 * model.moveBlend + Math.sin(timeSec * 2 + model.phase) * 0.03;
+        model.parts.head.rotation.y = Math.sin(timeSec * 1.1 + model.phase) * 0.14;
+        model.parts.shadow.scale.set(
+            1 + model.moveBlend * 0.16,
+            1 + model.moveBlend * 0.1,
+            1
+        );
+        model.parts.shadow.material.opacity = 0.25 + model.moveBlend * 0.12;
+    }
+
     model.ring.rotation.z += dt * 2.2;
-    model.label.position.y = 3.45 + bob * 0.3;
+
+    const stackLift = (model.crowdIndex % 3) * 0.44 + Math.min(1.0, Math.floor(model.crowdIndex / 3) * 0.18);
+    const crowdScale = model.crowdTotal > 12 ? 0.56 : model.crowdTotal > 8 ? 0.65 : model.crowdTotal > 5 ? 0.74 : 0.9;
+    model.label.position.y = 3.25 + stackLift + bob * 0.22;
+    const sparseLabel = model.selected || model.crowdTotal <= 8 || model.crowdIndex < 6 || (model.crowdIndex % 2 === 0 && model.crowdTotal <= 16);
+    model.label.visible = sparseLabel;
+    if (model.labelBaseScale) {
+        model.label.scale.set(
+            model.labelBaseScale.x * crowdScale,
+            model.labelBaseScale.y * crowdScale,
+            model.labelBaseScale.z
+        );
+    }
+
+    if (model.bubble) {
+        const now = performance.now();
+        const remainingMs = model.bubbleUntil - now;
+        if (remainingMs <= 0) {
+            model.bubble.visible = false;
+        } else {
+            model.bubble.visible = true;
+            model.bubble.position.y = 5.05 + stackLift + model.bubbleLift + bob * 0.2;
+            if (model.bubbleBaseScale) {
+                const bubbleScale = Math.max(0.56, crowdScale * 0.9);
+                model.bubble.scale.set(
+                    model.bubbleBaseScale.x * bubbleScale,
+                    model.bubbleBaseScale.y * bubbleScale,
+                    model.bubbleBaseScale.z
+                );
+            }
+            model.bubble.material.opacity = remainingMs < 460 ? Math.max(0.18, remainingMs / 460) : 1;
+        }
+    }
 }
 
 function updateCamera(dt) {
@@ -1469,18 +1804,27 @@ function getRenderableAgents() {
 }
 
 function applyActionHints(actions) {
+    const fresh = [];
     actions.forEach((a) => {
         const actionId = `${a.timestamp || ""}-${a.wallet || ""}-${a.action || ""}-${a.tick || ""}`;
         if (seenActionIds.has(actionId)) return;
         seenActionIds.add(actionId);
+        fresh.push(a);
+    });
 
-        if (a.action === "move" && a.wallet && agentModels.has(a.wallet)) {
-            const m = agentModels.get(a.wallet);
+    fresh.slice(0, 6).forEach((a) => {
+        if (!a.wallet || !agentModels.has(a.wallet)) return;
+        const m = agentModels.get(a.wallet);
+
+        if (a.action === "move") {
             m.ring.material.opacity = 1;
             setTimeout(() => {
                 if (!m.selected) m.ring.material.opacity = 0.3;
             }, 450);
         }
+
+        const bubbleDuration = a.action === "move" ? 2200 : 3400;
+        showAgentBubble(m, bubbleTextFromAction(a), bubbleDuration);
     });
 }
 
@@ -1490,12 +1834,25 @@ async function pollWorld() {
 
     document.getElementById("tick").textContent = data.tick ?? "-";
     document.getElementById("agent-count").textContent = data.agent_count ?? latestAgents.length;
+    const tax = (Number(data.tax_rate ?? 0.05) * 100).toFixed(0);
+    document.getElementById("tax").textContent = `${tax}%`;
 
     document.getElementById("iron").textContent = `${data.market_prices?.iron ?? "-"}c`;
     document.getElementById("wood").textContent = `${data.market_prices?.wood ?? "-"}c`;
     document.getElementById("fish").textContent = `${data.market_prices?.fish ?? "-"}c`;
 
     renderEvents(data.active_events || []);
+}
+
+async function pollPyth() {
+    const data = await safeFetch("/pyth/price", false);
+    if (!data) return;
+    const p = Number(data.price);
+    if (Number.isFinite(p) && p > 0) {
+        document.getElementById("sol-price").textContent = `$${p.toFixed(2)}`;
+    } else {
+        document.getElementById("sol-price").textContent = "-";
+    }
 }
 
 async function pollAgents() {
@@ -1542,13 +1899,15 @@ async function boot() {
 
     bindCameraButtons();
     bindRegionButtons();
+    bindViewButtons();
     updateCameraButtonState();
 
-    await Promise.all([pollWorld(), pollAgents(), pollActions()]);
+    await Promise.all([pollWorld(), pollAgents(), pollActions(), pollPyth()]);
 
     setInterval(pollWorld, 3000);
     setInterval(pollAgents, 2400);
     setInterval(pollActions, 2200);
+    setInterval(pollPyth, 8000);
 
     animate();
 }
