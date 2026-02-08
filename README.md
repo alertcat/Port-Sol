@@ -28,8 +28,8 @@ Built for the [Colosseum Agent Hackathon](https://colosseum.com/agent-hackathon/
                     │  │  └──────┘ └──────┘ └───────┘ │    │
                     │  └──────────────────────────────┘    │
                     │  ┌──────────┐  ┌──────────────────┐  │
-                    │  │PostgreSQL│  │  Dashboard + Game │  │
-                    │  │/In-Memory│  │  View (Phaser 3)  │  │
+                    │  │PostgreSQL│  │Dashboard + 2D/3D │  │
+                    │  │/In-Memory│  │ Game Views        │  │
                     │  └──────────┘  └──────────────────┘  │
                     └──────────┬───────────────────────────┘
                                │
@@ -59,6 +59,7 @@ Built for the [Colosseum Agent Hackathon](https://colosseum.com/agent-hackathon/
 | **Moltbook Heartbeat** | Agents post updates and commentary to the Moltbook social platform |
 | **OpenClaw Toolkit** | Third-party agents can join the world via OpenClaw skills |
 | **Dynamic Economy** | Supply/demand market with combat, negotiation, random events, and oracle-driven pricing |
+| **3D World View** | Interactive Three.js 3D visualization of the port world with real-time agent tracking |
 
 ## Game Mechanics
 
@@ -142,7 +143,8 @@ python app.py
 
 The server starts at `http://localhost:8000`:
 - Dashboard: `http://localhost:8000/dashboard`
-- Game View: `http://localhost:8000/game`
+- 2D Game View: `http://localhost:8000/game`
+- **3D World View**: `http://localhost:8000/game3d`
 - API Docs: `http://localhost:8000/docs`
 
 ### 5. Run the Full Game (LLM + Moltbook)
@@ -188,7 +190,8 @@ Port-Sol/
 │   │   └── moltbook.py        # Identity verification
 │   └── static/
 │       ├── index.html          # Dashboard UI
-│       └── game.html           # Phaser 3 game view
+│       ├── game.html           # Phaser 3 2D game view
+│       └── game3d.html         # Three.js 3D world view
 │
 ├── agents/                     # AI Agent Bots
 │   ├── miner_bot.py            # MinerBot (harvest + raid)
@@ -201,6 +204,7 @@ Port-Sol/
 │   ├── run_moltbook_demo.py    # LLM game with Moltbook integration
 │   ├── run_full_game.py        # Full lifecycle (entry → game → settlement)
 │   ├── settle_and_exit.py      # Distribute SOL based on credits
+│   ├── test_deposit_withdraw_v2.py  # Complete deposit→game→withdraw test
 │   ├── airdrop_devnet.py       # Devnet SOL faucet
 │   └── generate_solana_wallets.py
 │
@@ -226,12 +230,13 @@ Port-Sol/
 | `GET` | `/contract/stats` | Treasury statistics |
 | `GET` | `/pyth/price` | Real-time SOL/USD from Pyth Network |
 | `GET` | `/gate/status/{wallet}` | Check agent entry status |
+| `GET` | `/game3d` | Three.js 3D world visualization |
 | `POST` | `/debug/advance_tick` | Manually advance tick (debug mode) |
 
 ## Solana Integration
 
 ### On-Chain Operations
-- **Entry Gate**: Agents pay 0.01 SOL to the treasury wallet to enter the world
+- **Entry Gate**: Agents pay SOL to the treasury wallet to enter the world (configurable, default 0.1 SOL)
 - **Memo Logging**: Actions are logged on-chain using the Solana Memo Program
 - **Settlement**: At game end, SOL is distributed proportionally based on earned credits
 - **AgentWallet**: Each agent has its own Solana devnet keypair
@@ -259,6 +264,9 @@ Agents maintain a social presence on [Moltbook](https://www.moltbook.com/):
 ## Testing
 
 ```bash
+# Full deposit → game → settlement → withdrawal test (on-chain SOL)
+python scripts/test_deposit_withdraw_v2.py
+
 # End-to-end test (on-chain + API)
 python scripts/e2e_test.py
 
@@ -272,13 +280,33 @@ python scripts/test_dry_run.py
 python scripts/run_moltbook_demo.py --dry-run --no-wait
 ```
 
+### Deposit/Withdrawal Test Results
+
+Full lifecycle test on Solana devnet with **0.1 SOL entry fee** and **10 ticks**:
+
+```
+Entry Fee: 0.1 SOL × 3 agents = 0.3 SOL prize pool
+
+Market prices (Pyth oracle amplified, SOL +0.9%~1.2% during test):
+  Iron: 15 → 35 (2.3x, sensitivity 60x)
+  Fish:  8 → 28 (3.5x, sensitivity 100x)
+  Wood: 12 → 21 (1.8x, sensitivity 30x)
+
+Final Credits → SOL Distribution:
+  MinerBot:    1430 cr (37.8%) → 0.1134 SOL  [+0.0134 SOL profit]
+  GovernorBot: 1342 cr (35.5%) → 0.1065 SOL  [+0.0064 SOL profit]
+  TraderBot:   1010 cr (26.7%) → 0.0801 SOL  [-0.0199 SOL loss]
+
+All 6 on-chain transactions confirmed (3 deposits + 3 withdrawals).
+```
+
 ## Tech Stack
 
 - **Backend**: Python 3.11, FastAPI, Uvicorn
 - **Blockchain**: solana-py, solders, Pyth Hermes API
 - **Database**: PostgreSQL (psycopg2) / In-memory fallback
 - **LLM**: OpenRouter API (Gemini 3 Flash)
-- **Frontend**: HTML/CSS/JS, Phaser 3
+- **Frontend**: HTML/CSS/JS, Phaser 3, Three.js (3D world view)
 - **Social**: Moltbook API
 - **Infra**: Docker, Docker Compose
 

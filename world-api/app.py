@@ -85,6 +85,14 @@ async def game_view():
         return FileResponse(str(game_file))
     return {"error": "Game view not found"}
 
+@app.get("/game3d", include_in_schema=False)
+async def game3d_view():
+    """Serve the Three.js game world view"""
+    game_file = static_dir / "game3d.html"
+    if game_file.exists():
+        return FileResponse(str(game_file))
+    return {"error": "3D game view not found"}
+
 @app.get("/health")
 async def health():
     """Health check endpoint"""
@@ -105,6 +113,7 @@ async def root():
         "rpc": os.getenv("SOLANA_RPC_URL", "https://api.devnet.solana.com"),
         "docs": "/docs",
         "dashboard": "/dashboard",
+        "game3d": "/game3d",
         "skill": "/skill.md",
         "moltbook_auth": "/moltbook/auth-info"
     }
@@ -143,7 +152,8 @@ async def world_meta():
             "feed": "SOL/USD",
             "source": "Pyth Network"
         },
-        "dashboard": "/dashboard"
+        "dashboard": "/dashboard",
+        "game3d": "/game3d"
     }
 
 @app.get("/world/state")

@@ -1,0 +1,1561 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Port Sol 3D World</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=IBM+Plex+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #080611;
+            --panel: #171126;
+            --line: #4f3a73;
+            --text: #f3ebff;
+            --muted: #beaed8;
+            --good: #31d38d;
+            --bad: #ff6b6b;
+            --accent: #c892ff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "IBM Plex Sans", sans-serif;
+            background:
+                radial-gradient(circle at 20% 12%, #2b0f4d 0%, transparent 44%),
+                radial-gradient(circle at 88% 6%, #1d1237 0%, transparent 40%),
+                linear-gradient(165deg, #090412 0%, #120a1f 55%, #0a0613 100%);
+            color: var(--text);
+            overflow: hidden;
+            min-height: 100vh;
+        }
+
+        .app {
+            display: grid;
+            grid-template-columns: 320px 1fr 350px;
+            grid-template-rows: 72px 1fr;
+            height: 100vh;
+        }
+
+        .topbar {
+            grid-column: 1 / -1;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--line);
+            background: linear-gradient(180deg, rgba(22, 14, 37, 0.96), rgba(13, 9, 24, 0.94));
+            backdrop-filter: blur(4px);
+        }
+
+        .brand {
+            font-family: "Orbitron", sans-serif;
+            font-size: 18px;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+            margin-right: 8px;
+            white-space: nowrap;
+        }
+
+        .brand b {
+            color: #c892ff;
+            font-weight: 700;
+        }
+
+        .meta {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--muted);
+            font-size: 13px;
+            white-space: nowrap;
+        }
+
+        .pill {
+            border: 1px solid #275f46;
+            background: rgba(17, 56, 43, 0.45);
+            color: #5ef3b0;
+            border-radius: 999px;
+            padding: 4px 10px;
+            font-size: 12px;
+        }
+
+        .pill.offline {
+            border-color: #7a3748;
+            background: rgba(94, 36, 46, 0.4);
+            color: #ffa3b4;
+        }
+
+        .toolbar {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .btn {
+            border: 1px solid #654496;
+            background: linear-gradient(180deg, #27193e, #1d1530);
+            color: #f1e8ff;
+            border-radius: 8px;
+            padding: 7px 10px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: transform 120ms ease, border-color 120ms ease, background 140ms ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            border-color: #ba8fff;
+        }
+
+        .btn.active {
+            border-color: #d2abff;
+            background: linear-gradient(180deg, #44256e, #311f56);
+            color: #fbf7ff;
+        }
+
+        .link {
+            text-decoration: none;
+            border: 1px solid #7358a8;
+            color: #f0e4ff;
+            border-radius: 8px;
+            padding: 7px 10px;
+            font-size: 12px;
+            background: rgba(34, 22, 54, 0.72);
+        }
+
+        .sidebar,
+        .inspector {
+            overflow-y: auto;
+            background: linear-gradient(180deg, rgba(22, 14, 38, 0.96), rgba(15, 10, 27, 0.94));
+        }
+
+        .sidebar {
+            border-right: 1px solid var(--line);
+            padding: 14px;
+        }
+
+        .inspector {
+            border-left: 1px solid var(--line);
+            padding: 14px;
+        }
+
+        #scene-wrap {
+            position: relative;
+            min-height: 0;
+        }
+
+        #scene {
+            width: 100%;
+            height: 100%;
+        }
+
+        .hud-note {
+            position: absolute;
+            left: 12px;
+            bottom: 10px;
+            border: 1px solid rgba(165, 124, 233, 0.48);
+            background: rgba(24, 14, 39, 0.76);
+            color: #dac6ff;
+            border-radius: 8px;
+            font-size: 11px;
+            line-height: 1.45;
+            padding: 8px 10px;
+            pointer-events: none;
+        }
+
+        .section {
+            margin-bottom: 14px;
+        }
+
+        .section h3 {
+            font-family: "Orbitron", sans-serif;
+            font-size: 12px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: #d0a9ff;
+            margin-bottom: 8px;
+        }
+
+        .card {
+            border: 1px solid #563d7f;
+            border-radius: 10px;
+            background: linear-gradient(180deg, rgba(36, 24, 56, 0.88), rgba(25, 18, 43, 0.88));
+            padding: 10px;
+            margin-bottom: 8px;
+        }
+
+        .muted {
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .agent-name {
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .agent-meta {
+            margin-top: 4px;
+            color: #ccb8e8;
+            font-size: 12px;
+        }
+
+        .row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .row + .row {
+            margin-top: 6px;
+        }
+
+        .chip {
+            font-size: 11px;
+            padding: 3px 7px;
+            border-radius: 999px;
+            border: 1px solid #70579f;
+            color: #e7d8ff;
+        }
+
+        .region-count {
+            font-size: 12px;
+            color: #d8c4f8;
+        }
+
+        .list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .item {
+            border: 1px solid #563d7f;
+            border-radius: 10px;
+            background: linear-gradient(180deg, rgba(36, 24, 56, 0.88), rgba(25, 18, 43, 0.88));
+            padding: 8px;
+        }
+
+        .item .head {
+            color: #f0e5ff;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .item .body {
+            margin-top: 3px;
+            font-size: 12px;
+            color: #ccb9e5;
+            line-height: 1.35;
+            overflow-wrap: anywhere;
+            word-break: break-word;
+        }
+
+        .price-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        .price-cell {
+            border: 1px solid #563d7f;
+            border-radius: 10px;
+            background: linear-gradient(180deg, rgba(36, 24, 56, 0.88), rgba(25, 18, 43, 0.88));
+            text-align: center;
+            padding: 10px 8px;
+        }
+
+        .price-cell .k {
+            color: #ccb9ea;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .price-cell .v {
+            margin-top: 4px;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .accent {
+            color: var(--accent);
+        }
+
+        .danger {
+            color: var(--bad);
+        }
+
+        .ok {
+            color: var(--good);
+        }
+
+        @media (max-width: 1300px) {
+            .app {
+                grid-template-columns: 1fr;
+                grid-template-rows: 72px 56vh auto auto;
+                height: auto;
+                min-height: 100vh;
+            }
+
+            .sidebar {
+                border-right: none;
+                border-top: 1px solid var(--line);
+            }
+
+            .inspector {
+                border-left: none;
+                border-top: 1px solid var(--line);
+            }
+
+            #scene-wrap {
+                min-height: 420px;
+            }
+
+            .toolbar {
+                margin-left: 0;
+            }
+
+            .topbar {
+                flex-wrap: wrap;
+                justify-content: space-between;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="app">
+    <header class="topbar">
+        <div class="brand"><b>Port Sol</b> 3D Observer</div>
+        <div class="meta">
+            <span>Tick <b id="tick" class="accent">-</b></span>
+            <span>Agents <b id="agent-count" class="accent">-</b></span>
+            <span id="conn" class="pill">Connected</span>
+        </div>
+        <div class="toolbar">
+            <button class="btn active" data-camera="overview">Overview</button>
+            <button class="btn" data-camera="free">Free Orbit</button>
+            <button class="btn" data-camera="follow">Follow Agent</button>
+            <button class="btn" data-region="dock">Dock</button>
+            <button class="btn" data-region="mine">Mine</button>
+            <button class="btn" data-region="market">Market</button>
+            <button class="btn" data-region="forest">Forest</button>
+            <a class="link" href="/game">Legacy 2D</a>
+            <a class="link" href="/dashboard">Dashboard</a>
+        </div>
+    </header>
+
+    <aside class="sidebar">
+        <div class="section">
+            <h3>Regions</h3>
+            <div id="region-list" class="list"></div>
+        </div>
+
+        <div class="section">
+            <h3>Selected Agent</h3>
+            <div id="agent-detail" class="card muted">Click an agent model to inspect details.</div>
+        </div>
+
+        <div class="section">
+            <h3>Agents</h3>
+            <div id="agent-list" class="list">
+                <div class="muted">Waiting for agent data...</div>
+            </div>
+        </div>
+    </aside>
+
+    <main id="scene-wrap">
+        <div id="scene"></div>
+        <div class="hud-note">
+            Click region pad: quick camera focus<br>
+            Click agent model: select + inspect<br>
+            Mouse: rotate and zoom in Free Orbit mode
+        </div>
+    </main>
+
+    <aside class="inspector">
+        <div class="section">
+            <h3>Market</h3>
+            <div class="price-grid">
+                <div class="price-cell"><div class="k">Iron</div><div class="v" id="iron">-</div></div>
+                <div class="price-cell"><div class="k">Wood</div><div class="v" id="wood">-</div></div>
+                <div class="price-cell"><div class="k">Fish</div><div class="v" id="fish">-</div></div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>Events</h3>
+            <div id="events" class="list">
+                <div class="muted">No active events.</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>Recent Actions</h3>
+            <div id="actions" class="list">
+                <div class="muted">No recent actions.</div>
+            </div>
+        </div>
+    </aside>
+</div>
+
+<script async src="https://ga.jspm.io/npm:es-module-shims@1.10.0/dist/es-module-shims.js"></script>
+<script type="importmap">
+{
+    "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+    }
+}
+</script>
+<script>
+(function () {
+    function showGame3DError(message) {
+        const text = String(message || "3D world failed to initialize");
+        let box = document.getElementById("game3d-fatal");
+        if (!box) {
+            box = document.createElement("div");
+            box.id = "game3d-fatal";
+            box.style.position = "fixed";
+            box.style.left = "16px";
+            box.style.bottom = "16px";
+            box.style.zIndex = "9999";
+            box.style.maxWidth = "70vw";
+            box.style.padding = "10px 12px";
+            box.style.border = "1px solid #8f3f53";
+            box.style.borderRadius = "8px";
+            box.style.background = "rgba(56, 15, 24, 0.92)";
+            box.style.color = "#ffd9df";
+            box.style.font = "12px/1.4 IBM Plex Sans, sans-serif";
+            box.style.whiteSpace = "pre-wrap";
+            document.body.appendChild(box);
+        }
+        box.textContent = "3D runtime error: " + text;
+    }
+
+    window.__showGame3DError = showGame3DError;
+    window.addEventListener("error", (e) => {
+        if (e && e.message) showGame3DError(e.message);
+    });
+    window.addEventListener("unhandledrejection", (e) => {
+        const reason = e && e.reason ? (e.reason.stack || e.reason.message || String(e.reason)) : "Unhandled promise rejection";
+        showGame3DError(reason);
+    });
+})();
+</script>
+<script type="module">
+import * as THREE from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+
+const API = window.location.origin;
+const fatal = window.__showGame3DError || ((msg) => console.error(msg));
+
+const REGION_CONFIG = {
+    dock: {
+        label: "Dock",
+        color: 0x2f88ff,
+        center: new THREE.Vector3(-18, 0, -14),
+        gate: new THREE.Vector3(-6, 0, -6),
+        cameraOffset: new THREE.Vector3(-12, 14, -10),
+        desc: "Entry zone with water and piers"
+    },
+    mine: {
+        label: "Mine",
+        color: 0xf0a326,
+        center: new THREE.Vector3(18, 0, -14),
+        gate: new THREE.Vector3(6, 0, -6),
+        cameraOffset: new THREE.Vector3(10, 14, -10),
+        desc: "Rocky extraction field"
+    },
+    market: {
+        label: "Market",
+        color: 0x1ad07a,
+        center: new THREE.Vector3(-18, 0, 14),
+        gate: new THREE.Vector3(-6, 0, 6),
+        cameraOffset: new THREE.Vector3(-12, 14, 10),
+        desc: "Trading square and stalls"
+    },
+    forest: {
+        label: "Forest",
+        color: 0x3fcc56,
+        center: new THREE.Vector3(18, 0, 14),
+        gate: new THREE.Vector3(6, 0, 6),
+        cameraOffset: new THREE.Vector3(10, 14, 10),
+        desc: "Harvest zone with tree cover"
+    }
+};
+
+const REGION_IDS = Object.keys(REGION_CONFIG);
+const CROSSROAD = new THREE.Vector3(0, 0, 0);
+
+let scene;
+let camera;
+let renderer;
+let controls;
+let clock;
+let raycaster;
+let pointer;
+
+let cameraMode = "overview";
+let selectedAgentWallet = null;
+let selectedRegion = null;
+let latestAgents = [];
+let activeActions = [];
+
+const regionMeshes = {};
+const agentModels = new Map();
+const clickableMeshes = [];
+const seenActionIds = new Set();
+
+const cameraGoal = new THREE.Vector3(0, 34, 36);
+const lookGoal = new THREE.Vector3(0, 0, 0);
+
+function setConn(ok) {
+    const el = document.getElementById("conn");
+    el.className = ok ? "pill" : "pill offline";
+    el.textContent = ok ? "Connected" : "Disconnected";
+}
+
+async function safeFetch(path) {
+    try {
+        const res = await fetch(API + path);
+        if (!res.ok) {
+            setConn(false);
+            return null;
+        }
+        setConn(true);
+        return await res.json();
+    } catch (_err) {
+        setConn(false);
+        return null;
+    }
+}
+
+function hashColor(seed) {
+    let h = 0;
+    const s = String(seed || "agent");
+    for (let i = 0; i < s.length; i += 1) {
+        h = (h * 33 + s.charCodeAt(i)) | 0;
+    }
+    const hue = Math.abs(h) % 360;
+    const color = new THREE.Color();
+    color.setHSL(hue / 360, 0.65, 0.56);
+    return color;
+}
+
+function createTextSprite(text, opts = {}) {
+    const width = opts.width || 256;
+    const height = opts.height || 72;
+    const bg = opts.bg || "rgba(8,14,25,0.86)";
+    const fg = opts.fg || "#dce9ff";
+    const border = opts.border || "rgba(95,165,255,0.5)";
+    const font = opts.font || "600 28px IBM Plex Sans";
+
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext("2d");
+
+    ctx.fillStyle = bg;
+    ctx.strokeStyle = border;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    const r = 12;
+    ctx.moveTo(r, 0);
+    ctx.lineTo(width - r, 0);
+    ctx.quadraticCurveTo(width, 0, width, r);
+    ctx.lineTo(width, height - r);
+    ctx.quadraticCurveTo(width, height, width - r, height);
+    ctx.lineTo(r, height);
+    ctx.quadraticCurveTo(0, height, 0, height - r);
+    ctx.lineTo(0, r);
+    ctx.quadraticCurveTo(0, 0, r, 0);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.font = font;
+    ctx.fillStyle = fg;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(text, width / 2, height / 2 + 1);
+
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.needsUpdate = true;
+    const material = new THREE.SpriteMaterial({ map: texture, transparent: true });
+    const sprite = new THREE.Sprite(material);
+    sprite.scale.set((width / height) * 3.8, 1.1, 1);
+    return sprite;
+}
+
+function createBaseWorld() {
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x060913);
+    scene.fog = new THREE.Fog(0x04070f, 42, 98);
+
+    const root = document.getElementById("scene");
+    if (!root) {
+        throw new Error("Missing #scene container");
+    }
+    if (!window.WebGLRenderingContext) {
+        throw new Error("WebGL not supported in this browser");
+    }
+
+    camera = new THREE.PerspectiveCamera(58, root.clientWidth / root.clientHeight, 0.1, 260);
+    camera.position.set(0, 34, 36);
+
+    renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(root.clientWidth, root.clientHeight);
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    root.appendChild(renderer.domElement);
+
+    controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.08;
+    controls.maxPolarAngle = Math.PI * 0.48;
+    controls.minDistance = 8;
+    controls.maxDistance = 80;
+    controls.target.set(0, 0, 0);
+
+    clock = new THREE.Clock();
+    raycaster = new THREE.Raycaster();
+    pointer = new THREE.Vector2();
+
+    renderer.domElement.addEventListener("pointerdown", onPointerDown);
+
+    window.addEventListener("resize", () => {
+        camera.aspect = root.clientWidth / root.clientHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(root.clientWidth, root.clientHeight);
+    });
+}
+
+function buildLighting() {
+    const hemi = new THREE.HemisphereLight(0xa3d8ff, 0x0b0d12, 0.85);
+    scene.add(hemi);
+
+    const sun = new THREE.DirectionalLight(0xffffff, 1.05);
+    sun.position.set(24, 34, 10);
+    sun.castShadow = true;
+    sun.shadow.mapSize.width = 2048;
+    sun.shadow.mapSize.height = 2048;
+    sun.shadow.camera.near = 1;
+    sun.shadow.camera.far = 120;
+    sun.shadow.camera.left = -48;
+    sun.shadow.camera.right = 48;
+    sun.shadow.camera.top = 48;
+    sun.shadow.camera.bottom = -48;
+    scene.add(sun);
+
+    const fill = new THREE.PointLight(0x4ba6ff, 0.45, 140);
+    fill.position.set(0, 14, 0);
+    scene.add(fill);
+}
+
+function buildGroundAndRoads() {
+    const ground = new THREE.Mesh(
+        new THREE.CircleGeometry(52, 96),
+        new THREE.MeshStandardMaterial({ color: 0x1a2437, roughness: 0.95, metalness: 0.05 })
+    );
+    ground.rotation.x = -Math.PI / 2;
+    ground.receiveShadow = true;
+    scene.add(ground);
+
+    const outerRing = new THREE.Mesh(
+        new THREE.RingGeometry(49, 52, 80),
+        new THREE.MeshBasicMaterial({ color: 0x243149, transparent: true, opacity: 0.35, side: THREE.DoubleSide })
+    );
+    outerRing.rotation.x = -Math.PI / 2;
+    outerRing.position.y = 0.02;
+    scene.add(outerRing);
+
+    const roadMat = new THREE.MeshStandardMaterial({ color: 0x4d525f, roughness: 0.88, metalness: 0.1 });
+
+    const hRoad = new THREE.Mesh(new THREE.BoxGeometry(44, 0.22, 5.2), roadMat);
+    hRoad.position.set(0, 0.11, 0);
+    hRoad.receiveShadow = true;
+    scene.add(hRoad);
+
+    const vRoad = new THREE.Mesh(new THREE.BoxGeometry(5.2, 0.22, 36), roadMat);
+    vRoad.position.set(0, 0.11, 0);
+    vRoad.receiveShadow = true;
+    scene.add(vRoad);
+
+    for (let i = -20; i <= 20; i += 4) {
+        const lane = new THREE.Mesh(
+            new THREE.BoxGeometry(1.5, 0.04, 0.2),
+            new THREE.MeshBasicMaterial({ color: 0xc0c7d6, transparent: true, opacity: 0.55 })
+        );
+        lane.position.set(i, 0.25, 0);
+        scene.add(lane);
+    }
+
+    for (let i = -16; i <= 16; i += 4) {
+        const lane = new THREE.Mesh(
+            new THREE.BoxGeometry(0.2, 0.04, 1.5),
+            new THREE.MeshBasicMaterial({ color: 0xc0c7d6, transparent: true, opacity: 0.55 })
+        );
+        lane.position.set(0, 0.25, i);
+        scene.add(lane);
+    }
+
+    const signPost = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.24, 0.24, 3.2, 10),
+        new THREE.MeshStandardMaterial({ color: 0x735038, roughness: 0.8 })
+    );
+    signPost.position.set(0, 1.6, 0);
+    signPost.castShadow = true;
+    scene.add(signPost);
+
+    const signBoardA = new THREE.Mesh(
+        new THREE.BoxGeometry(4.4, 0.65, 0.25),
+        new THREE.MeshStandardMaterial({ color: 0x946845, roughness: 0.78 })
+    );
+    signBoardA.position.set(0, 2.35, 0.55);
+    scene.add(signBoardA);
+
+    const signBoardB = new THREE.Mesh(
+        new THREE.BoxGeometry(4.4, 0.65, 0.25),
+        new THREE.MeshStandardMaterial({ color: 0x946845, roughness: 0.78 })
+    );
+    signBoardB.position.set(0, 1.55, -0.55);
+    scene.add(signBoardB);
+
+    const grid = new THREE.GridHelper(96, 48, 0x364969, 0x1f2b3f);
+    grid.material.opacity = 0.25;
+    grid.material.transparent = true;
+    grid.position.y = 0.03;
+    scene.add(grid);
+}
+
+function addDockProps(group) {
+    const water = new THREE.Mesh(
+        new THREE.BoxGeometry(16, 0.12, 9),
+        new THREE.MeshStandardMaterial({ color: 0x2468d0, roughness: 0.3, metalness: 0.1, transparent: true, opacity: 0.88 })
+    );
+    water.position.set(0, 0.2, -3.5);
+    group.add(water);
+
+    const pierMat = new THREE.MeshStandardMaterial({ color: 0x7d5432, roughness: 0.85 });
+    for (let i = -4; i <= 4; i += 2) {
+        const pier = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.2, 3.2), pierMat);
+        pier.position.set(i, 0.3, -0.4);
+        group.add(pier);
+    }
+
+    const crateMat = new THREE.MeshStandardMaterial({ color: 0x9e7246, roughness: 0.8 });
+    const crateA = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.2, 1.2), crateMat);
+    crateA.position.set(-3.2, 0.85, 2.3);
+    crateA.castShadow = true;
+    group.add(crateA);
+
+    const crateB = crateA.clone();
+    crateB.position.set(2.9, 0.85, 1.8);
+    group.add(crateB);
+}
+
+function addMineProps(group) {
+    const rockMat = new THREE.MeshStandardMaterial({ color: 0x65615d, roughness: 0.94 });
+    const stones = [
+        [-4, -1.2, 1.6],
+        [-2, 1.5, 1.0],
+        [0.5, -0.3, 1.8],
+        [3.2, 0.8, 1.4],
+        [4.4, -2.2, 1.2]
+    ];
+    stones.forEach((s) => {
+        const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(s[2], 0), rockMat);
+        rock.position.set(s[0], 0.9, s[1]);
+        rock.castShadow = true;
+        group.add(rock);
+    });
+
+    const crystalMat = new THREE.MeshStandardMaterial({ color: 0xd6dde9, emissive: 0x61738f, emissiveIntensity: 0.25, roughness: 0.35 });
+    for (let i = 0; i < 5; i += 1) {
+        const c = new THREE.Mesh(new THREE.ConeGeometry(0.42, 1.8, 6), crystalMat);
+        c.position.set(-3 + i * 1.5, 1.05, 3);
+        c.rotation.y = i * 0.7;
+        group.add(c);
+    }
+}
+
+function addMarketProps(group) {
+    const stone = new THREE.Mesh(
+        new THREE.BoxGeometry(14, 0.14, 9),
+        new THREE.MeshStandardMaterial({ color: 0x858c9a, roughness: 0.93 })
+    );
+    stone.position.set(0, 0.2, 0);
+    group.add(stone);
+
+    const stallDefs = [
+        { x: -3.8, z: -2.8, color: 0xdd5b4e },
+        { x: -1.2, z: -2.8, color: 0x4e92ea },
+        { x: 1.4, z: -2.8, color: 0xe2a432 },
+        { x: 4.0, z: -2.8, color: 0x4bc672 }
+    ];
+
+    stallDefs.forEach((s) => {
+        const base = new THREE.Mesh(
+            new THREE.BoxGeometry(1.8, 1.2, 1.4),
+            new THREE.MeshStandardMaterial({ color: 0x6f4b2d, roughness: 0.83 })
+        );
+        base.position.set(s.x, 0.8, s.z);
+        base.castShadow = true;
+        group.add(base);
+
+        const roof = new THREE.Mesh(
+            new THREE.BoxGeometry(2.1, 0.2, 1.7),
+            new THREE.MeshStandardMaterial({ color: s.color, roughness: 0.7 })
+        );
+        roof.position.set(s.x, 1.55, s.z);
+        roof.castShadow = true;
+        group.add(roof);
+    });
+}
+
+function addForestProps(group) {
+    const treeTrunkMat = new THREE.MeshStandardMaterial({ color: 0x6f4b2f, roughness: 0.86 });
+    const treeLeafMat = new THREE.MeshStandardMaterial({ color: 0x2ba452, roughness: 0.84 });
+
+    const treePoints = [
+        [-4.2, -2.6],
+        [-2.4, -3.0],
+        [0.1, -2.5],
+        [2.2, -3.1],
+        [4.0, -2.4],
+        [-3.4, 0.2],
+        [-1.2, 0.5],
+        [1.6, 0.2],
+        [3.6, 0.5],
+        [-3.9, 2.6],
+        [-1.6, 2.9],
+        [0.8, 2.6],
+        [3.0, 2.8]
+    ];
+
+    treePoints.forEach((p, idx) => {
+        const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.25, 1.2, 8), treeTrunkMat);
+        trunk.position.set(p[0], 0.7, p[1]);
+        trunk.castShadow = true;
+        group.add(trunk);
+
+        const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.88 + (idx % 3) * 0.08, 12, 10), treeLeafMat);
+        leaf.position.set(p[0], 1.65, p[1]);
+        leaf.castShadow = true;
+        group.add(leaf);
+    });
+}
+
+function buildRegions() {
+    REGION_IDS.forEach((regionId) => {
+        const cfg = REGION_CONFIG[regionId];
+        const group = new THREE.Group();
+        group.position.set(cfg.center.x, 0, cfg.center.z);
+
+        const pad = new THREE.Mesh(
+            new THREE.CylinderGeometry(7.2, 7.5, 0.5, 42),
+            new THREE.MeshStandardMaterial({
+                color: cfg.color,
+                emissive: cfg.color,
+                emissiveIntensity: 0.1,
+                roughness: 0.6,
+                metalness: 0.1
+            })
+        );
+        pad.position.y = 0.26;
+        pad.receiveShadow = true;
+        pad.userData = { kind: "region", region: regionId };
+        group.add(pad);
+        clickableMeshes.push(pad);
+
+        const ring = new THREE.Mesh(
+            new THREE.TorusGeometry(8.3, 0.18, 14, 60),
+            new THREE.MeshBasicMaterial({ color: cfg.color, transparent: true, opacity: 0.42 })
+        );
+        ring.rotation.x = Math.PI / 2;
+        ring.position.y = 0.55;
+        group.add(ring);
+
+        const label = createTextSprite(cfg.label, {
+            width: 220,
+            height: 68,
+            bg: "rgba(9,16,30,0.86)",
+            border: "rgba(108,171,255,0.55)",
+            font: "700 30px Orbitron"
+        });
+        label.position.set(0, 3.4, 0);
+        group.add(label);
+
+        if (regionId === "dock") {
+            addDockProps(group);
+        } else if (regionId === "mine") {
+            addMineProps(group);
+        } else if (regionId === "market") {
+            addMarketProps(group);
+        } else if (regionId === "forest") {
+            addForestProps(group);
+        }
+
+        group.userData = {
+            region: regionId,
+            ring,
+            baseEmission: 0.1,
+            phase: Math.random() * Math.PI * 2
+        };
+
+        scene.add(group);
+        regionMeshes[regionId] = group;
+    });
+}
+
+function shortWallet(wallet) {
+    if (!wallet) return "unknown";
+    if (wallet.startsWith("placeholder-")) return wallet.replace("placeholder-", "");
+    if (wallet.length <= 10) return wallet;
+    return `${wallet.slice(0, 4)}...${wallet.slice(-4)}`;
+}
+
+function createAgentModel(agent) {
+    const root = new THREE.Group();
+    const color = hashColor(agent.wallet);
+    const displayName = agent.name || shortWallet(agent.wallet);
+
+    const bodyMat = new THREE.MeshStandardMaterial({
+        color,
+        emissive: color.clone().multiplyScalar(0.22),
+        emissiveIntensity: 0.2,
+        roughness: 0.35,
+        metalness: 0.2
+    });
+
+    const limbMat = new THREE.MeshStandardMaterial({ color: 0xd9e2ef, roughness: 0.55, metalness: 0.08 });
+
+    const torso = new THREE.Mesh(new THREE.CapsuleGeometry(0.45, 1.0, 6, 12), bodyMat);
+    torso.position.set(0, 1.45, 0);
+    torso.castShadow = true;
+
+    const head = new THREE.Mesh(new THREE.SphereGeometry(0.38, 14, 12), limbMat);
+    head.position.set(0, 2.45, 0);
+    head.castShadow = true;
+
+    const eye = new THREE.Mesh(
+        new THREE.BoxGeometry(0.22, 0.06, 0.04),
+        new THREE.MeshBasicMaterial({ color: 0x2f89ff })
+    );
+    eye.position.set(0, 2.46, 0.35);
+
+    const armL = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.82, 8), limbMat);
+    armL.position.set(-0.48, 1.56, 0);
+    armL.rotation.z = 0.25;
+    armL.castShadow = true;
+
+    const armR = armL.clone();
+    armR.position.set(0.48, 1.56, 0);
+    armR.rotation.z = -0.25;
+
+    const legL = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.14, 0.9, 8), limbMat);
+    legL.position.set(-0.2, 0.55, 0);
+    legL.castShadow = true;
+
+    const legR = legL.clone();
+    legR.position.set(0.2, 0.55, 0);
+
+    const backpack = new THREE.Mesh(
+        new THREE.BoxGeometry(0.52, 0.64, 0.24),
+        new THREE.MeshStandardMaterial({ color: 0x394963, roughness: 0.7 })
+    );
+    backpack.position.set(0, 1.45, -0.35);
+    backpack.castShadow = true;
+
+    const ring = new THREE.Mesh(
+        new THREE.TorusGeometry(0.95, 0.08, 12, 34),
+        new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.32 })
+    );
+    ring.rotation.x = Math.PI / 2;
+    ring.position.y = 0.15;
+
+    const label = createTextSprite(displayName, {
+        width: 260,
+        height: 64,
+        bg: "rgba(8, 13, 21, 0.86)",
+        border: "rgba(112, 170, 255, 0.55)",
+        font: "600 24px IBM Plex Sans"
+    });
+    label.position.set(0, 3.45, 0);
+
+    root.add(torso, head, eye, armL, armR, legL, legR, backpack, ring, label);
+
+    [torso, head, armL, armR, legL, legR, backpack].forEach((mesh) => {
+        mesh.userData = { kind: "agent", wallet: agent.wallet };
+        clickableMeshes.push(mesh);
+    });
+
+    scene.add(root);
+
+    return {
+        root,
+        ring,
+        label,
+        displayName,
+        target: new THREE.Vector3(),
+        route: [],
+        speed: 6 + Math.random() * 2.4,
+        phase: Math.random() * Math.PI * 2,
+        data: agent,
+        region: agent.region,
+        selected: false,
+        isPlaceholder: !!agent.placeholder,
+        initialized: false
+    };
+}
+
+function scatterPosition(regionId, idx, total) {
+    const cfg = REGION_CONFIG[regionId] || REGION_CONFIG.dock;
+    const count = Math.max(total, 1);
+    const angle = (idx / count) * Math.PI * 2;
+    const radius = 2.2 + (idx % 4) * 0.6;
+    return new THREE.Vector3(
+        cfg.center.x + Math.cos(angle) * radius,
+        1.05,
+        cfg.center.z + Math.sin(angle) * radius
+    );
+}
+
+function buildRoute(model, toRegion, destination) {
+    if (!model.region || model.region === toRegion) {
+        return [destination.clone()];
+    }
+
+    const fromGate = REGION_CONFIG[model.region]?.gate || CROSSROAD;
+    const toGate = REGION_CONFIG[toRegion]?.gate || CROSSROAD;
+
+    const points = [
+        new THREE.Vector3(fromGate.x, 1.05, fromGate.z),
+        new THREE.Vector3(CROSSROAD.x, 1.05, CROSSROAD.z),
+        new THREE.Vector3(toGate.x, 1.05, toGate.z),
+        destination.clone()
+    ];
+
+    return points.filter((p, i) => {
+        if (i === 0) return true;
+        return p.distanceTo(points[i - 1]) > 0.3;
+    });
+}
+
+function replaceLabel(model, text) {
+    if (model.label && model.label.material) {
+        if (model.label.material.map) model.label.material.map.dispose();
+        model.label.material.dispose();
+        model.root.remove(model.label);
+    }
+    model.label = createTextSprite(text, {
+        width: 260,
+        height: 64,
+        bg: "rgba(8, 13, 21, 0.86)",
+        border: "rgba(112, 170, 255, 0.55)",
+        font: "600 24px IBM Plex Sans"
+    });
+    model.label.position.set(0, 3.45, 0);
+    model.root.add(model.label);
+}
+
+function upsertAgents(renderAgents) {
+    const wallets = new Set(renderAgents.map((a) => a.wallet));
+
+    const regionGroups = {};
+    REGION_IDS.forEach((r) => {
+        regionGroups[r] = renderAgents.filter((a) => a.region === r);
+    });
+
+    renderAgents.forEach((agent) => {
+        let model = agentModels.get(agent.wallet);
+        if (!model) {
+            model = createAgentModel(agent);
+            agentModels.set(agent.wallet, model);
+        }
+
+        model.data = agent;
+        const inRegion = regionGroups[agent.region] || [agent];
+        const idx = Math.max(0, inRegion.findIndex((x) => x.wallet === agent.wallet));
+        const dest = scatterPosition(agent.region, idx, inRegion.length);
+        model.target.copy(dest);
+
+        if (!model.initialized) {
+            model.root.position.copy(dest);
+            model.initialized = true;
+        } else {
+            model.route = buildRoute(model, agent.region, dest);
+        }
+
+        model.region = agent.region;
+        model.isPlaceholder = !!agent.placeholder;
+        const displayName = agent.name || shortWallet(agent.wallet);
+        if (model.displayName !== displayName) {
+            replaceLabel(model, displayName);
+            model.displayName = displayName;
+        }
+    });
+
+    Array.from(agentModels.keys()).forEach((wallet) => {
+        if (!wallets.has(wallet)) {
+            const model = agentModels.get(wallet);
+            model.root.traverse((obj) => {
+                if (obj.material && obj.material.map && obj.material.map.dispose) {
+                    obj.material.map.dispose();
+                }
+                if (obj.material && obj.material.dispose) {
+                    obj.material.dispose();
+                }
+                if (obj.geometry && obj.geometry.dispose) {
+                    obj.geometry.dispose();
+                }
+            });
+            scene.remove(model.root);
+            agentModels.delete(wallet);
+        }
+    });
+
+    if (selectedAgentWallet && !agentModels.has(selectedAgentWallet)) {
+        selectedAgentWallet = null;
+    }
+
+    syncSelectionHighlight();
+}
+
+function syncSelectionHighlight() {
+    agentModels.forEach((model, wallet) => {
+        model.selected = wallet === selectedAgentWallet;
+        model.ring.material.opacity = model.selected ? 0.95 : 0.3;
+        model.ring.material.color.set(model.selected ? 0xffffff : hashColor(wallet));
+    });
+    renderSelectedAgent();
+}
+
+function renderRegionsPanel() {
+    const el = document.getElementById("region-list");
+    const counts = {
+        dock: 0,
+        mine: 0,
+        market: 0,
+        forest: 0
+    };
+
+    latestAgents.forEach((a) => {
+        if (counts[a.region] !== undefined) counts[a.region] += 1;
+    });
+
+    el.innerHTML = REGION_IDS.map((regionId) => {
+        const cfg = REGION_CONFIG[regionId];
+        const focus = selectedRegion === regionId ? "active" : "";
+        return `
+            <div class="card">
+                <div class="row">
+                    <div><span class="chip" style="border-color:#3a4b68;">${cfg.label}</span></div>
+                    <div class="region-count">${counts[regionId]} agents</div>
+                </div>
+                <div class="row muted">${cfg.desc}</div>
+                <div class="row">
+                    <button class="btn ${focus}" data-region="${regionId}">Focus ${cfg.label}</button>
+                </div>
+            </div>
+        `;
+    }).join("");
+
+    bindRegionButtons();
+}
+
+function renderAgentsPanel() {
+    const el = document.getElementById("agent-list");
+    if (!latestAgents.length) {
+        el.innerHTML = '<div class="muted">No real agents yet. Placeholder bots are shown in 3D.</div>';
+        return;
+    }
+
+    const sorted = [...latestAgents].sort((a, b) => b.credits - a.credits);
+    el.innerHTML = sorted.map((a) => {
+        const selectedClass = a.wallet === selectedAgentWallet ? "active" : "";
+        return `
+            <div class="card">
+                <div class="row">
+                    <div class="agent-name">${a.name || shortWallet(a.wallet)}</div>
+                    <button class="btn ${selectedClass}" data-select-wallet="${a.wallet}">Track</button>
+                </div>
+                <div class="agent-meta">${a.region} | AP ${a.energy} | Credits ${a.credits}</div>
+                <div class="muted">Wallet ${shortWallet(a.wallet)}</div>
+            </div>
+        `;
+    }).join("");
+
+    document.querySelectorAll("[data-select-wallet]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+            const wallet = btn.getAttribute("data-select-wallet");
+            selectAgent(wallet);
+            if (cameraMode === "follow") {
+                focusSelectedAgent();
+            }
+        });
+    });
+}
+
+function renderSelectedAgent() {
+    const el = document.getElementById("agent-detail");
+    if (!selectedAgentWallet || !agentModels.has(selectedAgentWallet)) {
+        el.classList.add("muted");
+        el.innerHTML = "Click an agent model to inspect details.";
+        return;
+    }
+
+    const model = agentModels.get(selectedAgentWallet);
+    const a = model.data || {};
+    const inv = a.inventory ? Object.entries(a.inventory).map(([k, v]) => `${k}:${v}`).join(", ") : "-";
+
+    el.classList.remove("muted");
+    el.innerHTML = `
+        <div class="agent-name">${a.name || shortWallet(a.wallet)}</div>
+        <div class="agent-meta">Region ${a.region}</div>
+        <div class="row"><span class="muted">Wallet</span><span>${shortWallet(a.wallet)}</span></div>
+        <div class="row"><span class="muted">Credits</span><span class="accent">${a.credits ?? 0}</span></div>
+        <div class="row"><span class="muted">Energy</span><span>${a.energy ?? 0}</span></div>
+        <div class="row"><span class="muted">Reputation</span><span>${a.reputation ?? 0}</span></div>
+        <div class="row"><span class="muted">Inventory</span><span>${inv || "-"}</span></div>
+    `;
+}
+
+function renderEvents(events) {
+    const el = document.getElementById("events");
+    if (!events || !events.length) {
+        el.innerHTML = '<div class="muted">No active events.</div>';
+        return;
+    }
+
+    el.innerHTML = events.map((e) => `
+        <div class="item">
+            <div class="head">${e.type || "event"} (${e.remaining ?? "?"} ticks)</div>
+            <div class="body">${e.description || ""}</div>
+        </div>
+    `).join("");
+}
+
+function renderActions(actions) {
+    const el = document.getElementById("actions");
+    if (!actions || !actions.length) {
+        el.innerHTML = '<div class="muted">No recent actions.</div>';
+        return;
+    }
+
+    el.innerHTML = actions.map((a) => {
+        const cls = a.success ? "ok" : "danger";
+        return `
+            <div class="item">
+                <div class="head">${a.action || "action"} <span class="${cls}">${a.success ? "ok" : "fail"}</span></div>
+                <div class="body">${a.message || ""}</div>
+                <div class="body muted">tick ${a.tick ?? "-"} | ${shortWallet(a.wallet || "")}</div>
+            </div>
+        `;
+    }).join("");
+}
+
+function bindCameraButtons() {
+    document.querySelectorAll("[data-camera]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+            setCameraMode(btn.getAttribute("data-camera"));
+        });
+    });
+}
+
+function bindRegionButtons() {
+    document.querySelectorAll("[data-region]").forEach((btn) => {
+        if (btn.dataset.regionBound === "1") return;
+        btn.dataset.regionBound = "1";
+        btn.addEventListener("click", () => {
+            const region = btn.getAttribute("data-region");
+            focusRegion(region);
+        });
+    });
+}
+
+function updateCameraButtonState() {
+    document.querySelectorAll("[data-camera]").forEach((btn) => {
+        btn.classList.toggle("active", btn.getAttribute("data-camera") === cameraMode);
+    });
+}
+
+function setCameraMode(mode) {
+    cameraMode = mode;
+    controls.enabled = mode === "free";
+    updateCameraButtonState();
+
+    if (mode === "overview") {
+        if (!selectedRegion) {
+            cameraGoal.set(0, 34, 36);
+            lookGoal.set(0, 0, 0);
+        }
+    }
+
+    if (mode === "follow") {
+        focusSelectedAgent();
+    }
+}
+
+function focusRegion(regionId) {
+    if (!REGION_CONFIG[regionId]) return;
+
+    selectedRegion = regionId;
+    const cfg = REGION_CONFIG[regionId];
+
+    setCameraMode("overview");
+    cameraGoal.set(
+        cfg.center.x + cfg.cameraOffset.x,
+        cfg.cameraOffset.y,
+        cfg.center.z + cfg.cameraOffset.z
+    );
+    lookGoal.set(cfg.center.x, 1.4, cfg.center.z);
+
+    renderRegionsPanel();
+    pulseRegion(regionId);
+}
+
+function pulseRegion(regionId) {
+    REGION_IDS.forEach((id) => {
+        const group = regionMeshes[id];
+        if (!group) return;
+        group.userData.baseEmission = id === regionId ? 0.32 : 0.1;
+    });
+}
+
+function selectAgent(wallet) {
+    selectedAgentWallet = wallet;
+    syncSelectionHighlight();
+
+    if (cameraMode === "follow") {
+        focusSelectedAgent();
+    }
+}
+
+function focusSelectedAgent() {
+    if (!selectedAgentWallet || !agentModels.has(selectedAgentWallet)) {
+        setCameraMode("overview");
+        return;
+    }
+
+    const m = agentModels.get(selectedAgentWallet);
+    const yaw = m.root.rotation.y;
+    const behind = new THREE.Vector3(Math.sin(yaw) * 8, -7, Math.cos(yaw) * 8);
+    cameraGoal.copy(m.root.position).sub(behind);
+    lookGoal.copy(m.root.position).add(new THREE.Vector3(0, 1.8, 0));
+}
+
+function onPointerDown(event) {
+    const rect = renderer.domElement.getBoundingClientRect();
+    pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+    raycaster.setFromCamera(pointer, camera);
+    const intersects = raycaster.intersectObjects(clickableMeshes, true);
+    if (!intersects.length) return;
+
+    const hit = intersects[0].object;
+    const data = hit.userData || {};
+
+    if (data.kind === "region") {
+        focusRegion(data.region);
+    } else if (data.kind === "agent") {
+        selectAgent(data.wallet);
+    }
+}
+
+function updateRegionAnimations(timeSec) {
+    REGION_IDS.forEach((regionId) => {
+        const group = regionMeshes[regionId];
+        if (!group) return;
+
+        const pulse = 0.9 + Math.sin(timeSec * 2.1 + group.userData.phase) * 0.08;
+        group.userData.ring.scale.set(pulse, pulse, 1);
+
+        const pad = group.children[0];
+        if (pad && pad.material && pad.material.emissiveIntensity !== undefined) {
+            const base = group.userData.baseEmission || 0.1;
+            pad.material.emissiveIntensity = base + Math.max(0, Math.sin(timeSec * 2.4 + group.userData.phase)) * 0.08;
+        }
+    });
+}
+
+function advanceAgent(model, dt, timeSec) {
+    const pos = model.root.position;
+
+    if (model.route.length > 0) {
+        const next = model.route[0];
+        const dir = new THREE.Vector3(next.x - pos.x, 0, next.z - pos.z);
+        const dist = dir.length();
+        const step = model.speed * dt;
+
+        if (dist <= step || dist < 0.05) {
+            pos.x = next.x;
+            pos.z = next.z;
+            model.route.shift();
+        } else {
+            dir.normalize();
+            pos.x += dir.x * step;
+            pos.z += dir.z * step;
+        }
+
+        const lookX = model.route[0]?.x ?? model.target.x;
+        const lookZ = model.route[0]?.z ?? model.target.z;
+        model.root.rotation.y = Math.atan2(lookX - pos.x, lookZ - pos.z);
+    } else {
+        pos.x += (model.target.x - pos.x) * Math.min(1, dt * 3.2);
+        pos.z += (model.target.z - pos.z) * Math.min(1, dt * 3.2);
+    }
+
+    const bob = Math.sin(timeSec * 4 + model.phase) * 0.08;
+    pos.y = 1.0 + bob;
+    model.ring.rotation.z += dt * 2.2;
+    model.label.position.y = 3.45 + bob * 0.3;
+}
+
+function updateCamera(dt) {
+    if (cameraMode === "free") {
+        controls.update();
+        return;
+    }
+
+    if (cameraMode === "follow" && selectedAgentWallet && agentModels.has(selectedAgentWallet)) {
+        const m = agentModels.get(selectedAgentWallet);
+        const yaw = m.root.rotation.y;
+        const behind = new THREE.Vector3(Math.sin(yaw) * 8, -7.5, Math.cos(yaw) * 8);
+        cameraGoal.copy(m.root.position).sub(behind);
+        cameraGoal.y = 8.5;
+        lookGoal.copy(m.root.position).add(new THREE.Vector3(0, 1.8, 0));
+    } else if (cameraMode === "overview" && !selectedRegion) {
+        cameraGoal.set(0, 34, 36);
+        lookGoal.set(0, 0, 0);
+    }
+
+    camera.position.lerp(cameraGoal, Math.min(1, dt * 2.4));
+    controls.target.lerp(lookGoal, Math.min(1, dt * 2.8));
+    camera.lookAt(controls.target);
+}
+
+function getRenderableAgents() {
+    if (latestAgents.length > 0) {
+        return latestAgents;
+    }
+
+    return REGION_IDS.map((regionId, i) => ({
+        wallet: `placeholder-${regionId}`,
+        name: `Awaiting-${regionId}`,
+        region: regionId,
+        credits: 0,
+        energy: 100,
+        inventory: {},
+        reputation: 0,
+        placeholder: true,
+        rank: i + 1
+    }));
+}
+
+function applyActionHints(actions) {
+    actions.forEach((a) => {
+        const actionId = `${a.timestamp || ""}-${a.wallet || ""}-${a.action || ""}-${a.tick || ""}`;
+        if (seenActionIds.has(actionId)) return;
+        seenActionIds.add(actionId);
+
+        if (a.action === "move" && a.wallet && agentModels.has(a.wallet)) {
+            const m = agentModels.get(a.wallet);
+            m.ring.material.opacity = 1;
+            setTimeout(() => {
+                if (!m.selected) m.ring.material.opacity = 0.3;
+            }, 450);
+        }
+    });
+}
+
+async function pollWorld() {
+    const data = await safeFetch("/world/state");
+    if (!data) return;
+
+    document.getElementById("tick").textContent = data.tick ?? "-";
+    document.getElementById("agent-count").textContent = data.agent_count ?? latestAgents.length;
+
+    document.getElementById("iron").textContent = `${data.market_prices?.iron ?? "-"}c`;
+    document.getElementById("wood").textContent = `${data.market_prices?.wood ?? "-"}c`;
+    document.getElementById("fish").textContent = `${data.market_prices?.fish ?? "-"}c`;
+
+    renderEvents(data.active_events || []);
+}
+
+async function pollAgents() {
+    const data = await safeFetch("/agents");
+    if (!data || !Array.isArray(data.agents)) return;
+
+    latestAgents = data.agents;
+
+    const renderAgents = getRenderableAgents();
+    upsertAgents(renderAgents);
+
+    renderRegionsPanel();
+    renderAgentsPanel();
+    renderSelectedAgent();
+}
+
+async function pollActions() {
+    const data = await safeFetch("/actions/recent?limit=20");
+    if (!data || !Array.isArray(data.actions)) return;
+
+    activeActions = data.actions;
+    renderActions(activeActions);
+    applyActionHints(activeActions);
+}
+
+function animate() {
+    requestAnimationFrame(animate);
+
+    const dt = clock.getDelta();
+    const t = clock.elapsedTime;
+
+    updateRegionAnimations(t);
+    agentModels.forEach((model) => advanceAgent(model, dt, t));
+    updateCamera(dt);
+
+    renderer.render(scene, camera);
+}
+
+async function boot() {
+    createBaseWorld();
+    buildLighting();
+    buildGroundAndRoads();
+    buildRegions();
+
+    bindCameraButtons();
+    bindRegionButtons();
+    updateCameraButtonState();
+
+    await Promise.all([pollWorld(), pollAgents(), pollActions()]);
+
+    setInterval(pollWorld, 3000);
+    setInterval(pollAgents, 2400);
+    setInterval(pollActions, 2200);
+
+    animate();
+}
+
+boot().catch((err) => {
+    fatal(err && (err.stack || err.message) ? (err.stack || err.message) : String(err));
+});
+</script>
+</body>
+</html>
