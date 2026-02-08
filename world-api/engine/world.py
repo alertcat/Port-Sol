@@ -100,6 +100,17 @@ class WorldState:
 class WorldEngine:
     """World Engine main class with PostgreSQL persistence"""
     
+    # Pyth oracle sensitivity per resource (amplification factor: 20-100)
+    # Higher sensitivity = resource price reacts more to SOL price changes
+    # iron: industrial commodity, moderately tied to SOL ecosystem activity
+    # wood: construction material, less volatile
+    # fish: perishable food, highly speculative and volatile
+    PYTH_SENSITIVITY = {
+        "iron": 60,    # Medium sensitivity
+        "wood": 30,    # Low sensitivity (stable commodity)
+        "fish": 100,   # High sensitivity (speculative/perishable)
+    }
+    
     def __init__(self, use_database: bool = True):
         self.state = WorldState()
         self.agents: Dict[str, Agent] = {}
@@ -107,10 +118,30 @@ class WorldEngine:
         self._use_database = use_database
         self._db = None
         
+        # Pyth oracle: fetch SOL/USD at game start as baseline
+        self._pyth_baseline_price: Optional[float] = None
+        self._pyth_initialized = False
+        self._init_pyth_baseline()
+        
         if use_database:
             self._init_database()
         
         self._compute_state_hash()
+    
+    def _init_pyth_baseline(self):
+        """Fetch SOL/USD price from Pyth Network at game start as the baseline."""
+        try:
+            from engine.blockchain import get_pyth_feed
+            pyth = get_pyth_feed()
+            price = pyth.get_sol_usd_price()
+            if price and price > 0:
+                self._pyth_baseline_price = price
+                self._pyth_initialized = True
+                print(f"Pyth oracle initialized: SOL/USD baseline = ${price:.2f}")
+            else:
+                print("Pyth oracle: could not fetch SOL price, oracle modifier disabled")
+        except Exception as e:
+            print(f"Pyth oracle init failed (non-fatal): {e}")
     
     def _init_database(self):
         """Initialize database connection"""
@@ -256,51 +287,67 @@ class WorldEngine:
                 {}, success, message, self.state.state_hash
             )
     
-    def _get_pyth_sol_modifier(self) -> float:
+    def _get_pyth_resource_modifier(self, resource: str) -> float:
         """
-        Fetch SOL/USD price from Pyth Network oracle and compute a market modifier.
+        Fetch current SOL/USD from Pyth, compare to baseline, and compute
+        a per-resource price modifier with amplified sensitivity.
         
-        When SOL price rises above $150, all in-game prices get a boost (up to +15%).
-        When SOL price drops below $150, all in-game prices get dampened (down to -15%).
-        This ties the in-game economy to real-world Solana market conditions.
+        Design rationale:
+        - SOL barely moves in a few minutes of gameplay, so we amplify the
+          percentage change by a per-resource sensitivity factor (20-100x).
+        - Different resources react differently to SOL price movements:
+          fish (100x) is highly speculative, wood (30x) is stable, iron (60x) moderate.
+        - Maximum effect: prices can rise to 3x or drop to 25% of starting price.
         
-        Returns a multiplier in range [0.85, 1.15]. Returns 1.0 on error.
+        Example: SOL moves +0.5% from baseline, fish sensitivity=100
+          → amplified = 0.005 * 100 = 0.5 → modifier = 1.5 (50% price increase)
+        
+        Returns multiplier in range [0.25, 3.0]. Returns 1.0 on error or if Pyth unavailable.
         """
+        if not self._pyth_initialized or not self._pyth_baseline_price:
+            return 1.0
+        
         try:
             from engine.blockchain import get_pyth_feed
             pyth = get_pyth_feed()
-            sol_price = pyth.get_sol_usd_price()
-            if sol_price and sol_price > 0:
-                # Reference price: $150 SOL/USD (adjustable baseline)
-                reference_price = 150.0
-                # Ratio: e.g. SOL=$180 → ratio=1.2, SOL=$120 → ratio=0.8
-                ratio = sol_price / reference_price
-                # Clamp modifier to ±15%: range [0.85, 1.15]
-                modifier = max(0.85, min(1.15, ratio))
-                return modifier
+            current_price = pyth.get_sol_usd_price()
+            if not current_price or current_price <= 0:
+                return 1.0
+            
+            # Percentage change from game-start baseline
+            pct_change = (current_price - self._pyth_baseline_price) / self._pyth_baseline_price
+            
+            # Amplify by per-resource sensitivity (20-100x)
+            sensitivity = self.PYTH_SENSITIVITY.get(resource, 50)
+            amplified = pct_change * sensitivity
+            
+            # Modifier: 1.0 = no change, >1.0 = price up, <1.0 = price down
+            modifier = 1.0 + amplified
+            
+            # Clamp: max 3x starting price, min 25% of starting price
+            modifier = max(0.25, min(3.0, modifier))
+            return modifier
+            
         except Exception as e:
             print(f"Pyth oracle modifier error (non-fatal): {e}")
-        return 1.0  # Neutral if Pyth unavailable
+        return 1.0
 
     def _update_market_prices(self, effects: dict):
         """
         Update market prices based on supply/demand dynamics + Pyth oracle.
         
         Mechanics:
-        - Track total resources sold/bought per tick
-        - High supply (lots of selling) → price drops
-        - Low supply (lots of buying) → price rises
-        - Random fluctuation ±8%
-        - Event modifiers (trade_boom = +20%)
-        - Pyth SOL/USD oracle: real-world SOL price influences in-game prices (±15%)
-        - Prices clamped to min 3, max 50
+        - Supply/demand: agent inventory levels push prices
+        - Random fluctuation: ±8% noise per tick
+        - Event modifiers: storms, trade booms, etc.
+        - Pyth oracle: real SOL/USD price change amplified per-resource (sensitivity 20-100x)
+          with dynamic baseline captured at game start. Max effect: 3x up, 75% down.
+        - Mean reversion toward base prices (weak pull)
+        - Prices clamped to range [3, 150]
         """
         import random as rng
         
         base_prices = {"iron": 15, "wood": 12, "fish": 8}
-        
-        # Pyth oracle: real-world SOL/USD price influences in-game market
-        pyth_modifier = self._get_pyth_sol_modifier()
         
         # Count total inventory of each resource across all agents (supply indicator)
         total_supply = {}
@@ -314,7 +361,6 @@ class WorldEngine:
             supply = total_supply.get(resource, 0)
             
             # Supply pressure: more supply → lower price
-            # Each unit of supply pushes price down slightly
             supply_factor = max(0.7, 1.0 - supply * 0.01)
             
             # Random fluctuation ±8%
@@ -323,14 +369,17 @@ class WorldEngine:
             # Mean reversion toward base price (weak pull)
             reversion = 1.0 + (base - current) * 0.02
             
-            # Event modifier
+            # Event modifier (storms, trade booms, etc.)
             event_mod = effects.get("price_modifier", 1.0)
             
-            # Calculate new price (now includes Pyth oracle modifier)
-            new_price = current * supply_factor * noise * reversion * event_mod * pyth_modifier
+            # Pyth oracle modifier: per-resource, amplified SOL/USD change
+            pyth_mod = self._get_pyth_resource_modifier(resource)
             
-            # Clamp
-            new_price = max(3, min(50, int(round(new_price))))
+            # Calculate new price
+            new_price = current * supply_factor * noise * reversion * event_mod * pyth_mod
+            
+            # Clamp: prices can range from 3 to 150 (3x of max base 50)
+            new_price = max(3, min(150, int(round(new_price))))
             
             self.state.market_prices[resource] = new_price
     
@@ -381,11 +430,30 @@ class WorldEngine:
         # 9. Persist to database
         self._save_to_database()
         
+        # Collect Pyth oracle info for this tick
+        pyth_info = {"enabled": self._pyth_initialized}
+        if self._pyth_initialized:
+            try:
+                from engine.blockchain import get_pyth_feed
+                current_sol = get_pyth_feed().get_sol_usd_price()
+                pyth_info["baseline_sol_usd"] = self._pyth_baseline_price
+                pyth_info["current_sol_usd"] = current_sol
+                if current_sol and self._pyth_baseline_price:
+                    pct = (current_sol - self._pyth_baseline_price) / self._pyth_baseline_price * 100
+                    pyth_info["change_pct"] = round(pct, 4)
+                    pyth_info["modifiers"] = {
+                        res: round(self._get_pyth_resource_modifier(res), 3)
+                        for res in self.state.market_prices
+                    }
+            except Exception:
+                pass
+        
         return {
             "tick": self.state.tick,
             "state_hash": self.state.state_hash,
             "agent_count": len(self.agents),
             "market_prices": dict(self.state.market_prices),
             "new_events": [e.to_dict() for e in new_events] if new_events else [],
-            "ap_recovery": actual_recovery
+            "ap_recovery": actual_recovery,
+            "pyth_oracle": pyth_info
         }

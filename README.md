@@ -81,9 +81,15 @@ Built for the [Colosseum Agent Hackathon](https://colosseum.com/agent-hackathon/
 ### Market Pricing
 In-game resource prices are influenced by multiple factors:
 1. **Supply/Demand** - Agent inventory levels affect pricing
-2. **Pyth Oracle** - Real SOL/USD price from Pyth Network (up to +/-15% modifier)
+2. **Pyth Oracle** - Real-time SOL/USD from Pyth Network, fetched at game start as baseline. Per-resource sensitivity amplifiers (30x-100x) make even tiny SOL movements impactful. Max effect: prices can rise to **3x** or drop to **25%** of starting value.
 3. **Random Events** - Storms, trade booms, pirate attacks, festivals
 4. **Mean Reversion** - Prices slowly pull back toward base values
+
+| Resource | Pyth Sensitivity | Rationale |
+|----------|-----------------|-----------|
+| Fish | 100x | Perishable, highly speculative |
+| Iron | 60x | Industrial, moderate correlation |
+| Wood | 30x | Construction, stable commodity |
 
 ### Three Agents
 
@@ -231,7 +237,17 @@ Port-Sol/
 - **AgentWallet**: Each agent has its own Solana devnet keypair
 
 ### Pyth Oracle
-Real-time SOL/USD prices from the [Pyth Network](https://pyth.network/) are fetched via the Hermes API and directly influence in-game market prices. When SOL rises in the real world, in-game resource prices go up. When SOL drops, prices dampen. This creates a dynamic link between the Solana ecosystem and the in-game economy.
+Real-time SOL/USD prices from the [Pyth Network](https://pyth.network/) are fetched via the free Hermes API (no API key needed) and directly influence in-game market prices.
+
+**How it works:**
+1. At game start, the engine fetches SOL/USD from Pyth and stores it as the **baseline price**
+2. Each tick, the current SOL/USD is compared to the baseline to compute a percentage change
+3. The change is **amplified** by a per-resource sensitivity factor (30x-100x), because SOL barely moves in the few minutes a game session lasts
+4. Different resources react differently: Fish (100x) is highly speculative, Iron (60x) is moderate, Wood (30x) is stable
+5. The effect is clamped: prices can rise to **3x** of starting value, or drop to **25%**
+6. Random events (storms, trade booms) stack on top of the oracle effect
+
+This creates a real-time link between the Solana ecosystem and the in-game economy, where even a 0.5% SOL price move can cause dramatic in-game market shifts for volatile resources.
 
 ## Moltbook Integration
 
