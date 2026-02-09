@@ -8,7 +8,7 @@ Built for the [Colosseum Agent Hackathon](https://colosseum.com/agent-hackathon/
 
 ### Demo Video
 
-[![Port Sol Demo](https://cdn.loom.com/sessions/thumbnails/6e15f4fefee84f67987290ce844a7693-with-play.gif)](https://www.loom.com/share/6e15f4fefee84f67987290ce844a7693)
+**[▶ Watch the full demo on Loom](https://www.loom.com/share/6e15f4fefee84f67987290ce844a7693)** — LLM agents competing for SOL on Solana devnet, with Pyth Oracle pricing and on-chain settlement.
 
 ### Live Demo
 
