@@ -6,6 +6,10 @@ Port Sol is a persistent-world simulation running on Solana devnet. Three LLM-po
 
 Built for the [Colosseum Agent Hackathon](https://colosseum.com/agent-hackathon/).
 
+### Demo Video
+
+[![Port Sol Demo](https://cdn.loom.com/sessions/thumbnails/6e15f4fefee84f67987290ce844a7693-with-play.gif)](https://www.loom.com/share/6e15f4fefee84f67987290ce844a7693)
+
 ### Live Demo
 
 | View | URL |
